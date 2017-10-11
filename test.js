@@ -48,3 +48,46 @@ test('should be able to connect and perform a query', t => {
     })
   }
 })
+
+test('use query util', t => {
+  t.plan(3)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg.query('SELECT NOW()', (err, result) => {
+      t.error(err)
+      t.ok(result.rows)
+      fastify.close()
+    })
+  })
+})
+
+test('use query util with promises', t => {
+  t.plan(2)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg
+      .query('SELECT NOW()')
+      .then(result => {
+        t.ok(result.rows)
+        fastify.close()
+      })
+      .catch(err => {
+        t.fail(err)
+        fastify.close()
+      })
+  })
+})
