@@ -27,7 +27,8 @@
   "homepage": "https://github.com/fastify/fastify-postgres#readme",
   "dependencies": {
     "fastify-plugin": "^0.1.1",
-    "pg": "^7.3.0"
+    "pg": "^7.3.0",
+    "util.promisify": "^1.0.0"
   },
   "devDependencies": {
     "fastify": "^0.29.2",
