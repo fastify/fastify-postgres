@@ -48,6 +48,29 @@ fastify.listen(3000, err => {
 })
 ```
 
+Async await is supported as well!
+```js
+const fastify = require('fastify')
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres'
+})
+
+fastify.get('/user/:id', async (req, reply) => {
+  const client = await fastify.pg.connect()
+  const { result } = await client.query(
+    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+  )
+  client.release()
+  return result
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
+
 ## Acknowledgements
 
 This project is kindly sponsored by:
