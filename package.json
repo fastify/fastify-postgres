@@ -1,0 +1,37 @@
+{
+  "name": "fastify-postgres",
+  "version": "0.1.0",
+  "description": "Fastify PostgreSQL connection plugin",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && tap test.js",
+    "postgres": "docker run --rm -p 5432:5432 postgres:9.6-alpine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastify/fastify-postgres.git"
+  },
+  "keywords": [
+    "fastify",
+    "postgres",
+    "postgresql",
+    "database",
+    "connection",
+    "sql"
+  ],
+  "author": "Tomas Della Vedova - @delvedor (http://delved.org)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fastify/fastify-postgres/issues"
+  },
+  "homepage": "https://github.com/fastify/fastify-postgres#readme",
+  "dependencies": {
+    "fastify-plugin": "^0.1.1",
+    "pg": "^7.3.0"
+  },
+  "devDependencies": {
+    "fastify": "^0.29.2",
+    "standard": "^10.0.3",
+    "tap": "^10.7.2"
+  }
+}
