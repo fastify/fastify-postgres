@@ -1,6 +1,6 @@
 {
   "name": "fastify-postgres",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fastify PostgreSQL connection plugin",
   "main": "index.js",
   "scripts": {
