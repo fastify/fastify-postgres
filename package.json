@@ -29,6 +29,9 @@
     "fastify-plugin": "^0.1.1",
     "pg": "^7.3.0"
   },
+  "optionalDependencies": {
+    "pg-native": "^2.2.0"
+  },
   "devDependencies": {
     "fastify": "^0.29.2",
     "standard": "^10.0.3",
