@@ -1,13 +1,15 @@
 'use strict'
 
 const fp = require('fastify-plugin')
+let pg = require('pg')
 
 function fastifyPostgres (fastify, options, next) {
-  let pg
   if (options.native) {
-    pg = require('pg-native')
-  } else {
-    pg = require('pg')
+    if (!pg.native) {
+      console.warn('pg-native not installed, can\'t use native option')
+    } else {
+      pg = pg.native
+    }
   }
 
   const pool = new pg.Pool(options)
