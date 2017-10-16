@@ -30,7 +30,7 @@
     "pg": "^7.3.0"
   },
   "devDependencies": {
-    "fastify": "^0.30.1",
+    "fastify": "^0.30.2",
     "pg-native": "^2.2.0",
     "standard": "^10.0.3",
     "tap": "^10.7.2"
