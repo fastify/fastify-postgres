@@ -96,9 +96,8 @@ fastify.listen(3000, err => {
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
 
 ### Native option
-Use native `libpq` to gain high performance; it will use [pg-native](https://github.com/brianc/node-pg-native) instead of [pg](https://github.com/brianc/node-pg).  
-Note: it requires PostgreSQL client libraries & tools installed, see 
-[instructions](https://github.com/brianc/node-pg-native#install).  
+If you want to gain the maximum performances you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
+*Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
 Note: trying to use native options without successfully installation of `pg-native` will get a warning and fallback to regular `pg` module.
 
 ```js
