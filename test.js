@@ -91,3 +91,28 @@ test('use query util with promises', t => {
       })
   })
 })
+
+test('use native module', t => {
+  t.plan(2)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres',
+    native: true
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg
+      .query('SELECT 1 AS one')
+      .then(result => {
+        t.ok(result.rows[0].one === 1)
+        fastify.close()
+      })
+      .catch(err => {
+        t.fail(err)
+        fastify.close()
+      })
+  })
+})

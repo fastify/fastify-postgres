@@ -15,7 +15,7 @@ This plugin will add the `pg` namespace in your Fastify instance, with the follo
 ```
 connect: the function to get a connection from the pool
 pool: the pool instance
-Client: a clinet constructor for a single query
+Client: a client constructor for a single query
 query: an utility to perform a query without a transaction
 ```
 
@@ -94,6 +94,34 @@ fastify.listen(3000, err => {
 })
 ```
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
+
+### Native option
+If you want to gain the maximum performances you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
+*Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
+Note: trying to use native options without successfully installation of `pg-native` will get a warning and fallback to regular `pg` module.
+
+```js
+const fastify = require('fastify')
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres',
+  native: true
+})
+
+fastify.get('/user/:id', (req, reply) => {
+  fastify.pg.query(
+    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+    function onResult (err, result) {
+      reply.send(err || result)
+    }
+  )
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
 
 ## Acknowledgements
 
