@@ -5,7 +5,7 @@ const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('./index')
 
-test('fastify.pg namespace should exist', t => {
+test('fastify.pg.test namespace should exist', t => {
   t.plan(6)
 
   const fastify = Fastify()
@@ -22,6 +22,25 @@ test('fastify.pg namespace should exist', t => {
     t.ok(fastify.pg.test.connect)
     t.ok(fastify.pg.test.pool)
     t.ok(fastify.pg.test.Client)
+    fastify.close()
+  })
+})
+
+test('fastify.pg namespace should exist when name option not configure', t => {
+  t.plan(5)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    t.ok(fastify.pg)
+    t.ok(fastify.pg.connect)
+    t.ok(fastify.pg.pool)
+    t.ok(fastify.pg.Client)
     fastify.close()
   })
 })

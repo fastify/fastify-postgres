@@ -17,16 +17,25 @@ function fastifyPostgres (fastify, options, next) {
   delete options.name
 
   const pool = new pg.Pool(options)
-
-  if (!fastify.pg) {
-    fastify.decorate('pg', {})
-  }
-
-  fastify.pg[name] = {
+  const db = {
     connect: pool.connect.bind(pool),
     pool: pool,
     Client: pg.Client,
     query: pool.query.bind(pool)
+  }
+
+  if (name) {
+    if (!fastify.pg) {
+      fastify.decorate('pg', {})
+    }
+
+    fastify.pg[name] = db
+  } else {
+    if (fastify.pg) {
+      console.warn('fastify-postgres has already registered')
+    } else {
+      fastify.pg = db
+    }
   }
 
   fastify.addHook('onClose', (fastify, done) => pool.end(done))
