@@ -19,7 +19,7 @@ function fastifyPostgres (fastify, options, next) {
   const pool = new pg.Pool(options)
 
   if (!fastify.pg) {
-    fastify.decorate('pg', {});
+    fastify.decorate('pg', {})
   }
 
   fastify.pg[name] = {
@@ -27,7 +27,7 @@ function fastifyPostgres (fastify, options, next) {
     pool: pool,
     Client: pg.Client,
     query: pool.query.bind(pool)
-  };
+  }
 
   fastify.addHook('onClose', (fastify, done) => pool.end(done))
 
