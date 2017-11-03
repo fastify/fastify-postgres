@@ -13,22 +13,25 @@ function fastifyPostgres (fastify, options, next) {
     }
   }
 
+  const name = options.name
+  delete options.name
+
   const pool = new pg.Pool(options)
 
-  fastify.decorate('pg', {
+  if (!fastify.pg) {
+    fastify.decorate('pg', {});
+  }
+
+  fastify.pg[name] = {
     connect: pool.connect.bind(pool),
     pool: pool,
     Client: pg.Client,
     query: pool.query.bind(pool)
-  })
+  };
 
-  fastify.addHook('onClose', onClose)
+  fastify.addHook('onClose', (fastify, done) => pool.end(done))
 
   next()
-}
-
-function onClose (fastify, done) {
-  fastify.pg.pool.end(done)
 }
 
 module.exports = fp(fastifyPostgres, '>=0.13.1')

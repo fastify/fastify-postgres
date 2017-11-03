@@ -6,20 +6,22 @@ const Fastify = require('fastify')
 const fastifyPostgres = require('./index')
 
 test('fastify.pg namespace should exist', t => {
-  t.plan(5)
+  t.plan(6)
 
   const fastify = Fastify()
 
   fastify.register(fastifyPostgres, {
+    name: 'test',
     connectionString: 'postgres://postgres@localhost/postgres'
   })
 
   fastify.ready(err => {
     t.error(err)
     t.ok(fastify.pg)
-    t.ok(fastify.pg.connect)
-    t.ok(fastify.pg.pool)
-    t.ok(fastify.pg.Client)
+    t.ok(fastify.pg.test)
+    t.ok(fastify.pg.test.connect)
+    t.ok(fastify.pg.test.pool)
+    t.ok(fastify.pg.test.Client)
     fastify.close()
   })
 })
@@ -30,12 +32,13 @@ test('should be able to connect and perform a query', t => {
   const fastify = Fastify()
 
   fastify.register(fastifyPostgres, {
+    name: 'test',
     connectionString: 'postgres://postgres@localhost/postgres'
   })
 
   fastify.ready(err => {
     t.error(err)
-    fastify.pg.connect(onConnect)
+    fastify.pg.test.connect(onConnect)
   })
 
   function onConnect (err, client, done) {
@@ -55,12 +58,13 @@ test('use query util', t => {
   const fastify = Fastify()
 
   fastify.register(fastifyPostgres, {
+    name: 'test',
     connectionString: 'postgres://postgres@localhost/postgres'
   })
 
   fastify.ready(err => {
     t.error(err)
-    fastify.pg.query('SELECT NOW()', (err, result) => {
+    fastify.pg.test.query('SELECT NOW()', (err, result) => {
       t.error(err)
       t.ok(result.rows)
       fastify.close()
@@ -74,12 +78,13 @@ test('use query util with promises', t => {
   const fastify = Fastify()
 
   fastify.register(fastifyPostgres, {
+    name: 'test',
     connectionString: 'postgres://postgres@localhost/postgres'
   })
 
   fastify.ready(err => {
     t.error(err)
-    fastify.pg
+    fastify.pg.test
       .query('SELECT NOW()')
       .then(result => {
         t.ok(result.rows)
@@ -98,13 +103,14 @@ test('use native module', t => {
   const fastify = Fastify()
 
   fastify.register(fastifyPostgres, {
+    name: 'test',
     connectionString: 'postgres://postgres@localhost/postgres',
     native: true
   })
 
   fastify.ready(err => {
     t.error(err)
-    fastify.pg
+    fastify.pg.test
       .query('SELECT 1 AS one')
       .then(result => {
         t.ok(result.rows[0].one === 1)
