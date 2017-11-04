@@ -13,22 +13,34 @@ function fastifyPostgres (fastify, options, next) {
     }
   }
 
-  const pool = new pg.Pool(options)
+  const name = options.name
+  delete options.name
 
-  fastify.decorate('pg', {
+  const pool = new pg.Pool(options)
+  const db = {
     connect: pool.connect.bind(pool),
     pool: pool,
     Client: pg.Client,
     query: pool.query.bind(pool)
-  })
+  }
 
-  fastify.addHook('onClose', onClose)
+  if (name) {
+    if (!fastify.pg) {
+      fastify.decorate('pg', {})
+    }
+
+    fastify.pg[name] = db
+  } else {
+    if (fastify.pg) {
+      next(new Error('fastify-postgres has already registered'))
+    } else {
+      fastify.pg = db
+    }
+  }
+
+  fastify.addHook('onClose', (fastify, done) => pool.end(done))
 
   next()
-}
-
-function onClose (fastify, done) {
-  fastify.pg.pool.end(done)
 }
 
 module.exports = fp(fastifyPostgres, '>=0.13.1')
