@@ -32,7 +32,7 @@ function fastifyPostgres (fastify, options, next) {
     fastify.pg[name] = db
   } else {
     if (fastify.pg) {
-      console.warn('fastify-postgres has already registered')
+      next(new Error('fastify-postgres has already registered'))
     } else {
       fastify.pg = db
     }
