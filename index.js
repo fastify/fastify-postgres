@@ -43,4 +43,7 @@ function fastifyPostgres (fastify, options, next) {
   next()
 }
 
-module.exports = fp(fastifyPostgres, '>=0.13.1')
+module.exports = fp(fastifyPostgres, {
+  fastify: '>=0.39.1',
+  name: 'fastify-postgres'
+})
