@@ -63,7 +63,7 @@ fastify.get('/user/:id', async (req, reply) => {
     'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
   )
   client.release()
-  return result
+  return rows
 })
 
 fastify.listen(3000, err => {
