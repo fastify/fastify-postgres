@@ -123,6 +123,20 @@ fastify.listen(3000, err => {
 })
 ```
 
+## Development and Testing
+
+First, start postgres with:
+
+```
+$ npm run postgres
+```
+
+Then in another terminal:
+
+```
+$ npm test
+```
+
 ## Acknowledgements
 
 This project is kindly sponsored by:

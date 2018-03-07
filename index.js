@@ -1,7 +1,7 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-let pg = require('pg')
+var pg = require('pg')
 
 function fastifyPostgres (fastify, options, next) {
   if (options.native) {
@@ -44,6 +44,6 @@ function fastifyPostgres (fastify, options, next) {
 }
 
 module.exports = fp(fastifyPostgres, {
-  fastify: '>=0.39.1',
+  fastify: '>=1.1.0',
   name: 'fastify-postgres'
 })
