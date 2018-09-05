@@ -234,3 +234,22 @@ test('fastify.pg.test use native module', t => {
       })
   })
 })
+
+test('fastify.pg.test should throw with duplicate connection names', t => {
+  t.plan(1)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+    .register(fastifyPostgres, {
+      name: 'test',
+      connectionString: 'postgres://postgres@localhost/postgres'
+    })
+
+  fastify.ready(err => {
+    t.is(err.message, 'Connection name has already been registered: test')
+  })
+})
