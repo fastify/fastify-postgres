@@ -29,6 +29,10 @@ function fastifyPostgres (fastify, options, next) {
       fastify.decorate('pg', {})
     }
 
+    if (fastify.pg[name]) {
+      return next(new Error('Connection name has already been registered: ' + name))
+    }
+
     fastify.pg[name] = db
   } else {
     if (fastify.pg) {
