@@ -3,6 +3,39 @@
 const fp = require('fastify-plugin')
 var pg = require('pg')
 
+function transactionHelper (query, values) {
+  return new Promise((resolve, reject) => {
+    this.connect((err, client, done) => {
+      if (err) reject(err)
+
+      const shouldAbort = (err) => {
+        if (err) {
+          client.query('ROLLBACK', (err) => {
+            done()
+            reject(err)
+          })
+        }
+        return !!err
+      }
+
+      client.query('BEGIN', (err) => {
+        if (shouldAbort(err)) reject(err)
+        client.query(query, values, (err, res) => {
+          if (shouldAbort(err)) reject(err)
+
+          client.query('COMMIT', (err) => {
+            done()
+            if (err) {
+              reject(err)
+            }
+            resolve(res)
+          })
+        })
+      })
+    })
+  })
+}
+
 function fastifyPostgres (fastify, options, next) {
   if (options.native) {
     delete options.native
@@ -21,7 +54,8 @@ function fastifyPostgres (fastify, options, next) {
     connect: pool.connect.bind(pool),
     pool: pool,
     Client: pg.Client,
-    query: pool.query.bind(pool)
+    query: pool.query.bind(pool),
+    transact: transactionHelper.bind(pool)
   }
 
   if (name) {

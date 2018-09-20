@@ -253,3 +253,43 @@ test('fastify.pg.test should throw with duplicate connection names', t => {
     t.is(err.message, 'Connection name has already been registered: test')
   })
 })
+
+test('fastify.pg.test use transact util', t => {
+  t.plan(3)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg.test
+      .query('CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
+      .then(result => {
+        fastify.pg.test
+          .transact('INSERT INTO users(username) VALUES($1) RETURNING id', ['brianc'])
+          .then(result => {
+            t.ok(result.rows[0].id === 1)
+            fastify.pg.test
+              .query('SELECT * FROM users')
+              .then(result => {
+                t.ok(result.rows[0].username === 'brianc')
+              }).catch(err => {
+                t.fail(err)
+                fastify.close()
+              })
+          })
+          .catch(err => {
+            t.fail(err)
+            fastify.close()
+          })
+      })
+      .catch(err => {
+        t.fail(err)
+        fastify.close()
+      })
+  })
+})
