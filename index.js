@@ -3,36 +3,47 @@
 const fp = require('fastify-plugin')
 var pg = require('pg')
 
-function transactionHelper (query, values, cb = null) {
-  return new Promise((resolve, reject) => {
-    this.connect((err, client, done) => {
-      if (err) reject(err)
+function transactionUtil (pool, query, values, cb) {
+  pool.connect((err, client, done) => {
+    if (err) return cb(err)
 
-      const shouldAbort = (err) => {
-        if (err) {
-          client.query('ROLLBACK', () => {
-            done()
-          })
-        }
-        return !!err
+    const shouldAbort = (err) => {
+      if (err) {
+        client.query('ROLLBACK', () => {
+          done()
+        })
       }
+      return !!err
+    }
 
-      client.query('BEGIN', (err) => {
-        if (shouldAbort(err)) return cb ? cb(err) : reject(err)
-        client.query(query, values, (err, res) => {
-          if (shouldAbort(err)) return cb ? cb(err) : reject(err)
+    client.query('BEGIN', (err) => {
+      if (shouldAbort(err)) return cb(err)
+      client.query(query, values, (err, res) => {
+        if (shouldAbort(err)) return cb(err)
 
-          client.query('COMMIT', (err) => {
-            done()
-            if (err) {
-              return cb ? cb(err) : reject(err)
-            }
-            return cb ? cb(null, res) : resolve(res)
-          })
+        client.query('COMMIT', (err) => {
+          done()
+          if (err) {
+            return cb(err)
+          }
+          return cb(null, res)
         })
       })
     })
   })
+}
+
+function transact (query, values, cb) {
+  if (!cb) {
+    return new Promise((resolve, reject) => {
+      transactionUtil(this, query, values, function (err, res) {
+        if (err) { return reject(err) }
+        return resolve(res)
+      })
+    })
+  }
+
+  return transactionUtil(this, query, values, cb)
 }
 
 function fastifyPostgres (fastify, options, next) {
@@ -54,7 +65,7 @@ function fastifyPostgres (fastify, options, next) {
     pool: pool,
     Client: pg.Client,
     query: pool.query.bind(pool),
-    transact: transactionHelper.bind(pool)
+    transact: transact.bind(pool)
   }
 
   if (name) {
