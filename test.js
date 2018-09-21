@@ -254,7 +254,7 @@ test('fastify.pg.test should throw with duplicate connection names', t => {
   })
 })
 
-test('fastify.pg.test use transact util', t => {
+test('fastify.pg.test use transact util with promise', t => {
   t.plan(3)
 
   const fastify = Fastify()
@@ -285,6 +285,38 @@ test('fastify.pg.test use transact util', t => {
           .catch(err => {
             t.fail(err)
             fastify.close()
+          })
+      })
+      .catch(err => {
+        t.fail(err)
+        fastify.close()
+      })
+  })
+})
+
+test('fastify.pg.test use transact util with callback', t => {
+  t.plan(2)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg.test
+      .query('CREATE TABLE users2(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
+      .then(function () {
+        fastify.pg.test
+          .transact('INSERT INTO users2(username) VALUES($1) RETURNING id', ['brianc'], function (err, res) {
+            if (err) {
+              t.fail(err)
+              fastify.close()
+            } else {
+              t.ok(res.rows[0].id === 1)
+            }
           })
       })
       .catch(err => {
