@@ -18,7 +18,8 @@ This plugin will add the `pg` namespace in your Fastify instance, with the follo
 connect: the function to get a connection from the pool
 pool: the pool instance
 Client: a client constructor for a single query
-query: an utility to perform a query without a transaction
+query: a utility to perform a query _without_ a transaction
+transact: a utility to perform a query _with_ a transaction
 ```
 
 Example:
@@ -95,6 +96,30 @@ fastify.listen(3000, err => {
   console.log(`server listening on ${fastify.server.address().port}`)
 })
 ```
+
+Use of `pg.transact`
+```js
+const fastify = require('fastify')
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres'
+})
+
+fastify.post('/user/:username', (req, reply) => {
+  fastify.pg.transact(
+    'INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username],
+    function onResult (err, result) {
+      reply.send(err || result)
+    }
+  )
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
+
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
 
 ### Native option
