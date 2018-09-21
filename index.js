@@ -3,7 +3,7 @@
 const fp = require('fastify-plugin')
 var pg = require('pg')
 
-function transactionUtil (pool, query, values, cb) {
+function transactionUtil (pool, fn, cb) {
   pool.connect((err, client, done) => {
     if (err) return cb(err)
 
@@ -18,9 +18,8 @@ function transactionUtil (pool, query, values, cb) {
 
     client.query('BEGIN', (err) => {
       if (shouldAbort(err)) return cb(err)
-      client.query(query, values, (err, res) => {
-        if (shouldAbort(err)) return cb(err)
 
+      fn(client).then(res => {
         client.query('COMMIT', (err) => {
           done()
           if (err) {
@@ -28,22 +27,24 @@ function transactionUtil (pool, query, values, cb) {
           }
           return cb(null, res)
         })
+      }).catch(err => {
+        if (shouldAbort(err)) return cb(err)
       })
     })
   })
 }
 
-function transact (query, values, cb) {
+function transact (fn, cb) {
   if (!cb) {
     return new Promise((resolve, reject) => {
-      transactionUtil(this, query, values, function (err, res) {
+      transactionUtil(this, fn, function (err, res) {
         if (err) { return reject(err) }
         return resolve(res)
       })
     })
   }
 
-  return transactionUtil(this, query, values, cb)
+  return transactionUtil(this, fn, cb)
 }
 
 function fastifyPostgres (fastify, options, next) {

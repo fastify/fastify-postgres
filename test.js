@@ -268,9 +268,9 @@ test('fastify.pg.test use transact util with promise', t => {
     t.error(err)
     fastify.pg.test
       .query('CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
-      .then(result => {
+      .then(() => {
         fastify.pg.test
-          .transact('INSERT INTO users(username) VALUES($1) RETURNING id', ['brianc'])
+          .transact(client => { return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['brianc']) })
           .then(result => {
             t.ok(result.rows[0].id === 1)
             fastify.pg.test
@@ -308,9 +308,9 @@ test('fastify.pg.test use transact util with callback', t => {
     t.error(err)
     fastify.pg.test
       .query('CREATE TABLE users2(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
-      .then(function () {
+      .then(() => {
         fastify.pg.test
-          .transact('INSERT INTO users2(username) VALUES($1) RETURNING id', ['brianc'], function (err, res) {
+          .transact(client => { return client.query('INSERT INTO users2(username) VALUES($1) RETURNING id', ['brianc']) }, function (err, res) {
             if (err) {
               t.fail(err)
               fastify.close()
