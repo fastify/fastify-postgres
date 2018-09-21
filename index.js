@@ -3,32 +3,31 @@
 const fp = require('fastify-plugin')
 var pg = require('pg')
 
-function transactionHelper (query, values) {
+function transactionHelper (query, values, cb = null) {
   return new Promise((resolve, reject) => {
     this.connect((err, client, done) => {
       if (err) reject(err)
 
       const shouldAbort = (err) => {
         if (err) {
-          client.query('ROLLBACK', (err) => {
+          client.query('ROLLBACK', () => {
             done()
-            reject(err)
           })
         }
         return !!err
       }
 
       client.query('BEGIN', (err) => {
-        if (shouldAbort(err)) reject(err)
+        if (shouldAbort(err)) return cb ? cb(err) : reject(err)
         client.query(query, values, (err, res) => {
-          if (shouldAbort(err)) reject(err)
+          if (shouldAbort(err)) return cb ? cb(err) : reject(err)
 
           client.query('COMMIT', (err) => {
             done()
             if (err) {
-              reject(err)
+              return cb ? cb(err) : reject(err)
             }
-            resolve(res)
+            return cb ? cb(null, res) : resolve(res)
           })
         })
       })
