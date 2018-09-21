@@ -19,7 +19,7 @@ connect: the function to get a connection from the pool
 pool: the pool instance
 Client: a client constructor for a single query
 query: a utility to perform a query _without_ a transaction
-transact: a utility to perform a query _with_ a transaction
+transact: a utility to perform multiple queries _with_ a transaction
 ```
 
 Example:
@@ -106,8 +106,9 @@ fastify.register(require('fastify-postgres'), {
 })
 
 fastify.post('/user/:username', (req, reply) => {
-  fastify.pg.transact(
-    'INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username],
+  fastify.pg.transact(async client => {
+      return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
+    },
     function onResult (err, result) {
       reply.send(err || result)
     }
