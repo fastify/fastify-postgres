@@ -16,35 +16,43 @@ function transactionUtil (pool, fn, cb) {
       return !!err
     }
 
+    const commit = (err, res) => {
+      if (shouldAbort(err)) return cb(err)
+
+      client.query('COMMIT', (err) => {
+        done()
+        if (err) {
+          return cb(err)
+        }
+        return cb(null, res)
+      })
+    }
+
     client.query('BEGIN', (err) => {
       if (shouldAbort(err)) return cb(err)
 
-      fn(client).then(res => {
-        client.query('COMMIT', (err) => {
-          done()
-          if (err) {
-            return cb(err)
-          }
-          return cb(null, res)
-        })
-      }).catch(err => {
-        if (shouldAbort(err)) return cb(err)
-      })
+      const promise = fn(client, commit)
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(
+          (res) => commit(null, res),
+          (e) => commit(e))
+      }
     })
   })
 }
 
 function transact (fn, cb) {
-  if (!cb) {
-    return new Promise((resolve, reject) => {
-      transactionUtil(this, fn, function (err, res) {
-        if (err) { return reject(err) }
-        return resolve(res)
-      })
-    })
+  if (cb && typeof cb === 'function') {
+    return transactionUtil(this, fn, cb)
   }
 
-  return transactionUtil(this, fn, cb)
+  return new Promise((resolve, reject) => {
+    transactionUtil(this, fn, function (err, res) {
+      if (err) { return reject(err) }
+      return resolve(res)
+    })
+  })
 }
 
 function fastifyPostgres (fastify, options, next) {
