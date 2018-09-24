@@ -115,6 +115,16 @@ fastify.post('/user/:username', (req, reply) => {
   )
 })
 
+/* or with a commit callback
+
+fastify.pg.transact((client, commit) => { 
+  client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username], (err, id) => {
+    commit(err, id)
+  });
+})
+
+*/
+
 fastify.listen(3000, err => {
   if (err) throw err
   console.log(`server listening on ${fastify.server.address().port}`)

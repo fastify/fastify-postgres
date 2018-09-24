@@ -267,22 +267,15 @@ test('fastify.pg.test use transact util with promise', t => {
   fastify.ready(err => {
     t.error(err)
     fastify.pg.test
-      .query('CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
-      .then(() => {
+      .transact(client => client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['with-promise']))
+      .then(result => {
+        t.equals(result.rows.length, 1)
         fastify.pg.test
-          .transact(client => { return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['brianc']) })
+          .query(`SELECT * FROM users WHERE username = 'with-promise'`)
           .then(result => {
-            t.ok(result.rows[0].id === 1)
-            fastify.pg.test
-              .query('SELECT * FROM users')
-              .then(result => {
-                t.ok(result.rows[0].username === 'brianc')
-              }).catch(err => {
-                t.fail(err)
-                fastify.close()
-              })
-          })
-          .catch(err => {
+            t.ok(result.rows[0].username === 'with-promise')
+            fastify.close()
+          }).catch(err => {
             t.fail(err)
             fastify.close()
           })
@@ -295,7 +288,7 @@ test('fastify.pg.test use transact util with promise', t => {
 })
 
 test('fastify.pg.test use transact util with callback', t => {
-  t.plan(2)
+  t.plan(4)
 
   const fastify = Fastify()
 
@@ -306,22 +299,55 @@ test('fastify.pg.test use transact util with callback', t => {
 
   fastify.ready(err => {
     t.error(err)
+
     fastify.pg.test
-      .query('CREATE TABLE users2(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL)')
-      .then(() => {
+      .transact(client => client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['with-callback']), function (err, res) {
+        t.error(err)
+        t.equals(res.rows.length, 1)
+
         fastify.pg.test
-          .transact(client => { return client.query('INSERT INTO users2(username) VALUES($1) RETURNING id', ['brianc']) }, function (err, res) {
-            if (err) {
-              t.fail(err)
-              fastify.close()
-            } else {
-              t.ok(res.rows[0].id === 1)
-            }
+          .query(`SELECT * FROM users WHERE username = 'with-callback'`)
+          .then(result => {
+            t.ok(result.rows[0].username === 'with-callback')
+            fastify.close()
+          }).catch(err => {
+            t.fail(err)
+            fastify.close()
           })
       })
-      .catch(err => {
-        t.fail(err)
-        fastify.close()
+  })
+})
+
+test('fastify.pg.test use transact util with commit callback', t => {
+  t.plan(4)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+
+    fastify.pg.test.transact((client, commit) => {
+      client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['commit-callback'], (err, id) => {
+        commit(err, id)
       })
+    }, function (err, res) {
+      t.error(err)
+      t.equals(res.rows.length, 1)
+
+      fastify.pg.test
+        .query(`SELECT * FROM users WHERE username = 'commit-callback'`)
+        .then(result => {
+          t.ok(result.rows[0].username === 'commit-callback')
+          fastify.close()
+        }).catch(err => {
+          t.fail(err)
+          fastify.close()
+        })
+    })
   })
 })
