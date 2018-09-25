@@ -107,13 +107,26 @@ fastify.register(require('fastify-postgres'), {
 
 fastify.post('/user/:username', (req, reply) => {
   fastify.pg.transact(async client => {
-      return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
-    },
-    function onResult (err, result) {
-      reply.send(err || result)
+    try {
+      const id = await client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
+      reply.send(id)
+    } catch (err) {
+      reply.send(err)
     }
-  )
+  })
 })
+
+/* or with a transaction callback
+
+fastify.pg.transact(client => {
+    return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
+  },
+  function onResult (err, result) {
+    reply.send(err || result)
+  }
+})
+
+*/
 
 /* or with a commit callback
 

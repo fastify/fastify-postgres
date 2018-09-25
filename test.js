@@ -258,6 +258,7 @@ test('fastify.pg.test use transact util with promise', t => {
   t.plan(3)
 
   const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
 
   fastify.register(fastifyPostgres, {
     name: 'test',
@@ -274,15 +275,12 @@ test('fastify.pg.test use transact util with promise', t => {
           .query(`SELECT * FROM users WHERE username = 'with-promise'`)
           .then(result => {
             t.ok(result.rows[0].username === 'with-promise')
-            fastify.close()
           }).catch(err => {
             t.fail(err)
-            fastify.close()
           })
       })
       .catch(err => {
         t.fail(err)
-        fastify.close()
       })
   })
 })
@@ -291,6 +289,7 @@ test('fastify.pg.test use transact util with callback', t => {
   t.plan(4)
 
   const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
 
   fastify.register(fastifyPostgres, {
     name: 'test',
@@ -309,10 +308,8 @@ test('fastify.pg.test use transact util with callback', t => {
           .query(`SELECT * FROM users WHERE username = 'with-callback'`)
           .then(result => {
             t.ok(result.rows[0].username === 'with-callback')
-            fastify.close()
           }).catch(err => {
             t.fail(err)
-            fastify.close()
           })
       })
   })
@@ -322,6 +319,7 @@ test('fastify.pg.test use transact util with commit callback', t => {
   t.plan(4)
 
   const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
 
   fastify.register(fastifyPostgres, {
     name: 'test',
@@ -343,10 +341,8 @@ test('fastify.pg.test use transact util with commit callback', t => {
         .query(`SELECT * FROM users WHERE username = 'commit-callback'`)
         .then(result => {
           t.ok(result.rows[0].username === 'commit-callback')
-          fastify.close()
         }).catch(err => {
           t.fail(err)
-          fastify.close()
         })
     })
   })
