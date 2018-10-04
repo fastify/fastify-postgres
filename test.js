@@ -253,3 +253,97 @@ test('fastify.pg.test should throw with duplicate connection names', t => {
     t.is(err.message, 'Connection name has already been registered: test')
   })
 })
+
+test('fastify.pg.test use transact util with promise', t => {
+  t.plan(3)
+
+  const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg.test
+      .transact(client => client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['with-promise']))
+      .then(result => {
+        t.equals(result.rows.length, 1)
+        fastify.pg.test
+          .query(`SELECT * FROM users WHERE username = 'with-promise'`)
+          .then(result => {
+            t.ok(result.rows[0].username === 'with-promise')
+          }).catch(err => {
+            t.fail(err)
+          })
+      })
+      .catch(err => {
+        t.fail(err)
+      })
+  })
+})
+
+test('fastify.pg.test use transact util with callback', t => {
+  t.plan(4)
+
+  const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+
+    fastify.pg.test
+      .transact(client => client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['with-callback']), function (err, res) {
+        t.error(err)
+        t.equals(res.rows.length, 1)
+
+        fastify.pg.test
+          .query(`SELECT * FROM users WHERE username = 'with-callback'`)
+          .then(result => {
+            t.ok(result.rows[0].username === 'with-callback')
+          }).catch(err => {
+            t.fail(err)
+          })
+      })
+  })
+})
+
+test('fastify.pg.test use transact util with commit callback', t => {
+  t.plan(4)
+
+  const fastify = Fastify()
+  t.tearDown(fastify.close.bind(fastify))
+
+  fastify.register(fastifyPostgres, {
+    name: 'test',
+    connectionString: 'postgres://postgres@localhost/postgres'
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+
+    fastify.pg.test.transact((client, commit) => {
+      client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['commit-callback'], (err, id) => {
+        commit(err, id)
+      })
+    }, function (err, res) {
+      t.error(err)
+      t.equals(res.rows.length, 1)
+
+      fastify.pg.test
+        .query(`SELECT * FROM users WHERE username = 'commit-callback'`)
+        .then(result => {
+          t.ok(result.rows[0].username === 'commit-callback')
+        }).catch(err => {
+          t.fail(err)
+        })
+    })
+  })
+})

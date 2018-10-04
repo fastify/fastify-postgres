@@ -3,6 +3,58 @@
 const fp = require('fastify-plugin')
 var pg = require('pg')
 
+function transactionUtil (pool, fn, cb) {
+  pool.connect((err, client, done) => {
+    if (err) return cb(err)
+
+    const shouldAbort = (err) => {
+      if (err) {
+        client.query('ROLLBACK', () => {
+          done()
+        })
+      }
+      return !!err
+    }
+
+    const commit = (err, res) => {
+      if (shouldAbort(err)) return cb(err)
+
+      client.query('COMMIT', (err) => {
+        done()
+        if (err) {
+          return cb(err)
+        }
+        return cb(null, res)
+      })
+    }
+
+    client.query('BEGIN', (err) => {
+      if (shouldAbort(err)) return cb(err)
+
+      const promise = fn(client, commit)
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(
+          (res) => commit(null, res),
+          (e) => commit(e))
+      }
+    })
+  })
+}
+
+function transact (fn, cb) {
+  if (cb && typeof cb === 'function') {
+    return transactionUtil(this, fn, cb)
+  }
+
+  return new Promise((resolve, reject) => {
+    transactionUtil(this, fn, function (err, res) {
+      if (err) { return reject(err) }
+      return resolve(res)
+    })
+  })
+}
+
 function fastifyPostgres (fastify, options, next) {
   if (options.native) {
     delete options.native
@@ -21,7 +73,8 @@ function fastifyPostgres (fastify, options, next) {
     connect: pool.connect.bind(pool),
     pool: pool,
     Client: pg.Client,
-    query: pool.query.bind(pool)
+    query: pool.query.bind(pool),
+    transact: transact.bind(pool)
   }
 
   if (name) {
