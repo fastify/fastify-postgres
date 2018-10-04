@@ -106,13 +106,14 @@ fastify.register(require('fastify-postgres'), {
 })
 
 fastify.post('/user/:username', (req, reply) => {
-  fastify.pg.transact(async client => {
-    try {
-      const id = await client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
-      reply.send(id)
-    } catch (err) {
-      reply.send(err)
-    }
+  // will return a promise, fastify will send the result automatically
+  return fastify.pg.transact(async client => {
+    // will resolve to an id, or reject with an error
+    const id = await client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username])
+
+    // potentially do something with id
+
+    return id
   })
 })
 
