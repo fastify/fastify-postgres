@@ -1,7 +1,7 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-var pg = require('pg')
+var defaultPg = require('pg')
 
 function transactionUtil (pool, fn, cb) {
   pool.connect((err, client, done) => {
@@ -56,6 +56,10 @@ function transact (fn, cb) {
 }
 
 function fastifyPostgres (fastify, options, next) {
+  let pg = defaultPg
+  if (options.pg) {
+    pg = options.pg
+  }
   if (options.native) {
     delete options.native
     if (!pg.native) {

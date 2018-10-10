@@ -175,6 +175,34 @@ fastify.listen(3000, err => {
 })
 ```
 
+### `pg` option
+If you want to provide your own `pg` module, for example to support packages like [`pg-range`](https://www.npmjs.com/package/pg-range), you can provide an optional `pg` option with the patched library to use:
+
+```js
+const fastify = require('fastify')
+const pg = require("pg");
+require("pg-range").install(pg)
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres',
+  pg: pg
+})
+
+fastify.get('/user/:id', (req, reply) => {
+  fastify.pg.query(
+    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+    function onResult (err, result) {
+      reply.send(err || result)
+    }
+  )
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
+
 ## Development and Testing
 
 First, start postgres with:
