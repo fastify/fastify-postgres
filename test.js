@@ -117,6 +117,32 @@ test('use native module', t => {
   })
 })
 
+test('use alternative pg module', t => {
+  const altPg = require('pg')
+  t.plan(2)
+
+  const fastify = Fastify()
+
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres',
+    pg: altPg
+  })
+
+  fastify.ready(err => {
+    t.error(err)
+    fastify.pg
+      .query('SELECT 1 AS one')
+      .then(result => {
+        t.ok(result.rows[0].one === 1)
+        fastify.close()
+      })
+      .catch(err => {
+        t.fail(err)
+        fastify.close()
+      })
+  })
+})
+
 test('fastify.pg.test namespace should exist', t => {
   t.plan(6)
 
