@@ -4,7 +4,7 @@
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](http://standardjs.com/)  [![Build Status](https://travis-ci.org/fastify/fastify-postgres.svg?branch=master)](https://travis-ci.org/fastify/fastify-postgres)
 
-Fastify PostgreSQL connection plugin, with this you can share the same PostgreSQL connection pool in every part of your server.  
+Fastify PostgreSQL connection plugin, with this you can share the same PostgreSQL connection pool in every part of your server.
 Under the hood the [node-postgres](https://github.com/brianc/node-postgres) is used, the options that you pass to `register` will be passed to the PostgreSQL pool builder.
 
 ## Install
@@ -12,7 +12,7 @@ Under the hood the [node-postgres](https://github.com/brianc/node-postgres) is u
 npm i fastify-postgres --save
 ```
 ## Usage
-Add it to you project with `register` and you are done!  
+Add it to you project with `register` and you are done!
 This plugin will add the `pg` namespace in your Fastify instance, with the following properties:
 ```
 connect: the function to get a connection from the pool
@@ -131,7 +131,7 @@ fastify.pg.transact(client => {
 
 /* or with a commit callback
 
-fastify.pg.transact((client, commit) => { 
+fastify.pg.transact((client, commit) => {
   client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [req.params.username], (err, id) => {
     commit(err, id)
   });
@@ -211,9 +211,16 @@ First, start postgres with:
 $ npm run postgres
 ```
 
-Then in another terminal:
+Then you can, in another terminal, find the running docker, init the DB, then run the tests:
 
 ```
+$ docker ps
+CONTAINER ID        IMAGE                 COMMAND                  CREATED             STATUS              PORTS                    NAMES
+28341f85c4cd        postgres:9.6-alpine   "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        0.0.0.0:5432->5432/tcp   jovial_shockley
+
+$ docker exec -ti jovial_shockley /usr/local/bin/psql -d postgres -U postgres  -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);'
+CREATE TABLE
+
 $ npm test
 ```
 
