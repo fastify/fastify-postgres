@@ -24,7 +24,7 @@ transact: a utility to perform multiple queries _with_ a transaction
 
 Example:
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 
 fastify.register(require('fastify-postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
@@ -54,7 +54,7 @@ fastify.listen(3000, err => {
 
 Async await is supported as well!
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 
 fastify.register(require('fastify-postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
@@ -76,7 +76,7 @@ fastify.listen(3000, err => {
 ```
 Use of `pg.query`
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 
 fastify.register(require('fastify-postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
@@ -99,7 +99,7 @@ fastify.listen(3000, err => {
 
 Use of `pg.transact`
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 
 fastify.register(require('fastify-postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
@@ -153,7 +153,7 @@ If you want to gain the maximum performances you can install [pg-native](https:/
 Note: trying to use native options without successfully installation of `pg-native` will get a warning and fallback to regular `pg` module.
 
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 
 fastify.register(require('fastify-postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres',
@@ -179,7 +179,7 @@ fastify.listen(3000, err => {
 If you want to provide your own `pg` module, for example to support packages like [`pg-range`](https://www.npmjs.com/package/pg-range), you can provide an optional `pg` option with the patched library to use:
 
 ```js
-const fastify = require('fastify')
+const fastify = require('fastify')()
 const pg = require("pg");
 require("pg-range").install(pg)
 
