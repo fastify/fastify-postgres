@@ -133,7 +133,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
   childTest.end()
 })
 
-test('When a fastify.pg namespace is used:', (childTest) => {
+test('When fastify.pg.test namespace is used:', (childTest) => {
   childTest.test('Should be able to connect and perform a query', (t) => {
     t.plan(4)
 
