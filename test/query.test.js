@@ -85,7 +85,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
       const fastify = Fastify()
       t.teardown(() => fastify.close())
 
-      const DB_NAME = 'database_that_do_not_exist'
+      const DB_NAME = 'db_that_does_not_exist'
 
       fastify.register(fastifyPostgres, {
         connectionString: `postgres://postgres@localhost/${DB_NAME}`
@@ -109,7 +109,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    const DB_NAME = 'database_that_do_not_exist'
+    const DB_NAME = 'db_that_does_not_exist'
 
     fastify.register(fastifyPostgres, {
       connectionString: `postgres://postgres@localhost/${DB_NAME}`
