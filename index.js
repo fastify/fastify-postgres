@@ -9,7 +9,7 @@ function transactionUtil (pool, fn, cb) {
 
     const shouldAbort = (err) => {
       if (err) {
-        client.query('ROLLBACK', () => done())
+        client.query('ROLLBACK', done)
       }
 
       return !!err
