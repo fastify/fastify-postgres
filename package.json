@@ -40,5 +40,10 @@
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "tap"
+    ]
   }
 }
