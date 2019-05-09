@@ -5,8 +5,8 @@ const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
 
-test('When fastify.pg root namespace is used:', (childTest) => {
-  childTest.test('Should be able to connect and perform a query with a callback', (t) => {
+test('When fastify.pg root namespace is used:', (t) => {
+  t.test('Should be able to connect and perform a query with a callback', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -33,7 +33,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     }
   })
 
-  childTest.test('Should be able to use the query util with a callback', (t) => {
+  t.test('Should be able to use the query util with a callback', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -53,7 +53,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use the query util with promises', (t) => {
+  t.test('Should be able to use the query util with promises', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -77,7 +77,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test(
+  t.test(
     'query util should return an error when pg fails to perform an operation using a callback',
     (t) => {
       t.plan(4)
@@ -85,7 +85,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
       const fastify = Fastify()
       t.teardown(() => fastify.close())
 
-      const DB_NAME = 'db_that_does_not_exist'
+      const DB_NAME = 'database_that_do_not_exist'
 
       fastify.register(fastifyPostgres, {
         connectionString: `postgres://postgres@localhost/${DB_NAME}`
@@ -103,13 +103,13 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     }
   )
 
-  childTest.test('Should throw when pg fails to perform operation with promises', (t) => {
+  t.test('Should throw when pg fails to perform operation with promises', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    const DB_NAME = 'db_that_does_not_exist'
+    const DB_NAME = 'database_that_do_not_exist'
 
     fastify.register(fastifyPostgres, {
       connectionString: `postgres://postgres@localhost/${DB_NAME}`
@@ -130,11 +130,11 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.end()
+  t.end()
 })
 
-test('When fastify.pg.test namespace is used:', (childTest) => {
-  childTest.test('Should be able to connect and perform a query', (t) => {
+test('When fastify.pg.test namespace is used:', (t) => {
+  t.test('Should be able to connect and perform a query', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -160,7 +160,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     }
   })
 
-  childTest.test('Should be able to use query util with a callback', (t) => {
+  t.test('Should be able to use query util with a callback', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -180,7 +180,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use query util with promises', (t) => {
+  t.test('Should be able to use query util with promises', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -205,7 +205,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use native module', (t) => {
+  t.test('Should be able to use native module', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -231,7 +231,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should throw when pg fails to perform an operation with promises', (t) => {
+  t.test('Should throw when pg fails to perform an operation with promises', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -259,5 +259,5 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.end()
+  t.end()
 })

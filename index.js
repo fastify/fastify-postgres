@@ -9,7 +9,7 @@ function transactionUtil (pool, fn, cb) {
 
     const shouldAbort = (err) => {
       if (err) {
-        client.query('ROLLBACK', done)
+        client.query('ROLLBACK', () => done())
       }
 
       return !!err
@@ -60,7 +60,7 @@ function fastifyPostgres (fastify, options, next) {
   if (options.native) {
     delete options.native
     if (!pg.native) {
-      console.warn(`pg-native not installed, can't use native option - fallback to pg module`)
+      console.warn("pg-native not installed, can't use native option - fallback to pg module")
     } else {
       pg = pg.native
     }

@@ -5,8 +5,8 @@ const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
 
-test('When fastify.pg root namespace is used:', (childTest) => {
-  childTest.test('Should be able to use transact util with a callback', (t) => {
+test('When fastify.pg root namespace is used:', (t) => {
+  t.test('Should be able to use transact util with a callback', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -43,7 +43,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use transact util with promises', (t) => {
+  t.test('Should be able to use transact util with promises', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -80,7 +80,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use transact util with a commit callback', (t) => {
+  t.test('Should be able to use transact util with a commit callback', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -121,7 +121,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
+  t.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
     t.plan(9)
 
     const fastify = Fastify()
@@ -175,7 +175,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
+  t.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
     t.plan(8)
 
     const fastify = Fastify()
@@ -227,7 +227,7 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should throw if the pool connection throws an error', (t) => {
+  t.test('Should throw if the pool connection throws an error', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -248,11 +248,11 @@ test('When fastify.pg root namespace is used:', (childTest) => {
     })
   })
 
-  childTest.end()
+  t.end()
 })
 
-test('When fastify.pg.test namespace is used:', (childTest) => {
-  childTest.test('Should be able to use transact util with a callback', (t) => {
+test('When fastify.pg.test namespace is used:', (t) => {
+  t.test('Should be able to use transact util with a callback', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -290,7 +290,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use transact util with promises', (t) => {
+  t.test('Should be able to use transact util with promises', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -330,7 +330,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should be able to use transact util with a commit callback', (t) => {
+  t.test('Should be able to use transact util with a commit callback', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -373,7 +373,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
+  t.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
     t.plan(9)
 
     const fastify = Fastify()
@@ -428,7 +428,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
+  t.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
     t.plan(8)
 
     const fastify = Fastify()
@@ -481,7 +481,7 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.test('Should throw if the pool connection throws an error', (t) => {
+  t.test('Should throw if the pool connection throws an error', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -503,5 +503,5 @@ test('When fastify.pg.test namespace is used:', (childTest) => {
     })
   })
 
-  childTest.end()
+  t.end()
 })
