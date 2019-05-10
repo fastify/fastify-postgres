@@ -1,7 +1,7 @@
 'use strict'
 
+const defaultPg = require('pg')
 const fp = require('fastify-plugin')
-var defaultPg = require('pg')
 
 function transactionUtil (pool, fn, cb) {
   pool.connect((err, client, done) => {
@@ -9,10 +9,9 @@ function transactionUtil (pool, fn, cb) {
 
     const shouldAbort = (err) => {
       if (err) {
-        client.query('ROLLBACK', () => {
-          done()
-        })
+        client.query('ROLLBACK', done)
       }
+
       return !!err
     }
 
@@ -21,9 +20,8 @@ function transactionUtil (pool, fn, cb) {
 
       client.query('COMMIT', (err) => {
         done()
-        if (err) {
-          return cb(err)
-        }
+        if (err) return cb(err)
+
         return cb(null, res)
       })
     }
@@ -34,9 +32,7 @@ function transactionUtil (pool, fn, cb) {
       const promise = fn(client, commit)
 
       if (promise && typeof promise.then === 'function') {
-        promise.then(
-          (res) => commit(null, res),
-          (e) => commit(e))
+        promise.then((res) => commit(null, res), (e) => commit(e))
       }
     })
   })
@@ -49,7 +45,8 @@ function transact (fn, cb) {
 
   return new Promise((resolve, reject) => {
     transactionUtil(this, fn, function (err, res) {
-      if (err) { return reject(err) }
+      if (err) return reject(err)
+
       return resolve(res)
     })
   })
@@ -81,25 +78,25 @@ function fastifyPostgres (fastify, options, next) {
     transact: transact.bind(pool)
   }
 
+  fastify.addHook('onClose', (fastify, done) => pool.end(done))
+
   if (name) {
     if (!fastify.pg) {
       fastify.decorate('pg', {})
     }
 
     if (fastify.pg[name]) {
-      return next(new Error('Connection name has already been registered: ' + name))
+      return next(new Error(`fastify-postgres '${name}' instance name has already been registered`))
     }
 
     fastify.pg[name] = db
   } else {
     if (fastify.pg) {
-      next(new Error('fastify-postgres has already registered'))
+      return next(new Error('fastify-postgres has already been registered'))
     } else {
-      fastify.pg = db
+      fastify.decorate('pg', db)
     }
   }
-
-  fastify.addHook('onClose', (fastify, done) => pool.end(done))
 
   next()
 }
