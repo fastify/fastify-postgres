@@ -12,9 +12,6 @@ services:
 
 sudo: true
 
-env:
-  - CC=clang CXX=clang++
-
 before_install:
   - psql -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
