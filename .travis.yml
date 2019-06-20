@@ -1,5 +1,7 @@
 language: node_js
 
+dist: xenial
+
 node_js:
   - "10"
   - "8"
@@ -8,8 +10,15 @@ node_js:
 services:
   - postgresql
 
-before_script:
+sudo: true
+
+before_install:
   - psql -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      if [[ $(node -v) =~ v[1-9][0-9] ]]; then
+        source ./ci_scripts/build.sh;
+      fi
+    fi
 
 notifications:
   email:
