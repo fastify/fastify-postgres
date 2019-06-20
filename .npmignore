@@ -83,3 +83,5 @@ ci_scripts/
 .gitattributes
 .gitignore
 .github
+.DS_Store
+
