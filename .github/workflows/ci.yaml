@@ -1,0 +1,41 @@
+name: GitHub CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [6, 8, 10, 12, 13]
+    
+    name: Node.js ${{ matrix.node }}
+    
+    services:
+      postgres:
+        image: postgres:11-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports:
+        # will assign a random free host port
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: CI environment setup
+      run: |
+        npm i node-gyp 
+        sudo apt-get install -yqq libpq-dev postgresql-client
+        psql -h localhost -p ${{ job.services.postgres.ports[5432] }} -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres
+
+    - name: Install
+      run: npm install
+
+    - name: Run tests      
+      run: npm run test
