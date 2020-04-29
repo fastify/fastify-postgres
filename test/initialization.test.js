@@ -122,10 +122,10 @@ test('Should throw when trying to register duplicate connection names', (t) => {
       connectionString: 'postgres://postgres@localhost/postgres',
       name
     })
-    .register(fastifyPostgres, {
-      connectionString: 'postgres://postgres@localhost/postgres',
-      name
-    })
+  fastify.register(fastifyPostgres, {
+    connectionString: 'postgres://postgres@localhost/postgres',
+    name
+  })
 
   fastify.ready((err) => {
     t.ok(err)
