@@ -12,7 +12,7 @@ test('Should be able to use native module', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres',
+    connectionString: 'postgres://postgres:postgres@localhost/postgres',
     native: true
   })
 
@@ -38,7 +38,7 @@ test('Should be able to use an alternative pg module', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres',
+    connectionString: 'postgres://postgres:postgres@localhost/postgres',
     pg: altPg
   })
 
@@ -64,7 +64,7 @@ test('Should not throw if registered within different scopes (with and without n
 
   fastify.register(function scopeOne (instance, opts, next) {
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres@localhost/postgres'
+      connectionString: 'postgres://postgres:postgres@localhost/postgres'
     })
 
     next()
@@ -72,12 +72,12 @@ test('Should not throw if registered within different scopes (with and without n
 
   fastify.register(function scopeTwo (instance, opts, next) {
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres@localhost/postgres',
+      connectionString: 'postgres://postgres:postgres@localhost/postgres',
       name: 'one'
     })
 
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres@localhost/postgres',
+      connectionString: 'postgres://postgres:postgres@localhost/postgres',
       name: 'two'
     })
 
@@ -97,11 +97,11 @@ test('Should throw when trying to register multiple instances without giving a n
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres'
+    connectionString: 'postgres://postgres:postgres@localhost/postgres'
   })
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres'
+    connectionString: 'postgres://postgres:postgres@localhost/postgres'
   })
 
   fastify.ready((err) => {
@@ -119,11 +119,11 @@ test('Should throw when trying to register duplicate connection names', (t) => {
 
   fastify
     .register(fastifyPostgres, {
-      connectionString: 'postgres://postgres@localhost/postgres',
+      connectionString: 'postgres://postgres:postgres@localhost/postgres',
       name
     })
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres',
+    connectionString: 'postgres://postgres:postgres@localhost/postgres',
     name
   })
 
@@ -140,7 +140,7 @@ test('fastify.pg namespace should exist', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres'
+    connectionString: 'postgres://postgres:postgres@localhost/postgres'
   })
 
   fastify.ready((err) => {
@@ -160,7 +160,7 @@ test('fastify.pg.test namespace should exist', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres@localhost/postgres',
+    connectionString: 'postgres://postgres:postgres@localhost/postgres',
     name: 'test'
   })
 
