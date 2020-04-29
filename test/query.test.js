@@ -88,7 +88,7 @@ test('When fastify.pg root namespace is used:', (t) => {
       const DB_NAME = 'database_that_do_not_exist'
 
       fastify.register(fastifyPostgres, {
-        connectionString: `postgres://postgres@localhost/${DB_NAME}`
+        connectionString: `postgres://postgres:postgres@localhost/${DB_NAME}`
       })
 
       fastify.ready((err) => {
@@ -112,7 +112,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const DB_NAME = 'database_that_do_not_exist'
 
     fastify.register(fastifyPostgres, {
-      connectionString: `postgres://postgres@localhost/${DB_NAME}`
+      connectionString: `postgres://postgres:postgres@localhost/${DB_NAME}`
     })
 
     fastify.ready((err) => {
@@ -240,7 +240,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     const DB_NAME = 'database_that_do_not_exist'
 
     fastify.register(fastifyPostgres, {
-      connectionString: `postgres://postgres@localhost/${DB_NAME}`,
+      connectionString: `postgres://postgres:postgres@localhost/${DB_NAME}`,
       name: 'test'
     })
 
