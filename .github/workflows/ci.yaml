@@ -33,6 +33,7 @@ jobs:
       run: |
         npm i node-gyp 
         sudo apt-get install -yqq libpq-dev postgresql-client
+        chmod 600 .pgpass
         PGPASSFILE=.pgpass psql -h localhost -p ${{ job.services.postgres.ports[5432] }} -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres
 
     - name: Install
