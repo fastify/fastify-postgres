@@ -7,7 +7,7 @@
     "test": "standard && tap -J test/*.test.js",
     "test:report": "standard && tap -J --coverage-report=html test/*.test.js",
     "test:verbose": "standard && tap -J test/*.test.js -Rspec",
-    "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres",
+    "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
     "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres"
   },
   "repository": {
