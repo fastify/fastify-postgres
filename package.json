@@ -36,7 +36,7 @@
     "pg": "*",
     "pg-native": "^3.0.0",
     "standard": "^14.0.0",
-    "tap": "^12.7.0"
+    "tap": "^14.10.7"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
