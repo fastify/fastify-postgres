@@ -9,7 +9,7 @@ Under the hood the [node-postgres](https://github.com/brianc/node-postgres) is u
 
 ## Install
 ```
-npm i pg fastify-postgres --save
+npm i pg fastify-postgres@2 --save
 ```
 ## Usage
 Add it to you project with `register` and you are done!
