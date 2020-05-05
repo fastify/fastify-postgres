@@ -7,8 +7,8 @@
     "test": "standard && tap -J test/*.test.js",
     "test:report": "standard && tap -J --coverage-report=html test/*.test.js",
     "test:verbose": "standard && tap -J test/*.test.js -Rspec",
-    "load-data": "docker run --rm  -d --link fastify-postgres:postgres postgres:11-alpine psql -h postgres -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres",
-    "postgres": "docker run --rm -d -p 5432:5432 --name fastify-postgres postgres:11-alpine"
+    "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
+    "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres"
   },
   "repository": {
     "type": "git",
@@ -29,10 +29,10 @@
   },
   "homepage": "https://github.com/fastify/fastify-postgres#readme",
   "dependencies": {
-    "fastify-plugin": "^1.5.0"
+    "fastify-plugin": "^2.0.0"
   },
   "devDependencies": {
-    "fastify": "^2.7.1",
+    "fastify": "^3.0.0-rc.1",
     "pg": "*",
     "pg-native": "^3.0.0",
     "standard": "^13.0.1",
@@ -40,10 +40,5 @@
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "tap"
-    ]
   }
 }
