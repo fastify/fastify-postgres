@@ -162,7 +162,7 @@ test('When fastify.pg root namespace is used:', (t) => {
           t.is(result, undefined)
 
           fastify.pg
-            .query(`SELECT * FROM users WHERE username = 'root-rollback-user-callback'`)
+            .query('SELECT * FROM users WHERE username = \'root-rollback-user-callback\'')
             .then((result) => {
               t.ok(result)
               t.is(result.rows.length, 0)
@@ -215,7 +215,7 @@ test('When fastify.pg root namespace is used:', (t) => {
           t.is(err.message, 'We make it throw on purpose to trigger a rollback')
 
           fastify.pg
-            .query(`SELECT * FROM users WHERE username = 'root-rollback-user-promise'`)
+            .query('SELECT * FROM users WHERE username = \'root-rollback-user-promise\'')
             .then((result) => {
               t.ok(result)
               t.is(result.rows.length, 0)
@@ -415,7 +415,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
           t.is(result, undefined)
 
           fastify.pg.test
-            .query(`SELECT * FROM users WHERE username = 'namespace-rollback-user-callback'`)
+            .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-callback\'')
             .then((result) => {
               t.ok(result)
               t.is(result.rows.length, 0)
@@ -469,7 +469,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
           t.is(err.message, 'We make it throw on purpose to trigger a rollback')
 
           fastify.pg.test
-            .query(`SELECT * FROM users WHERE username = 'namespace-rollback-user-promise'`)
+            .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-promise\'')
             .then((result) => {
               t.ok(result)
               t.is(result.rows.length, 0)
