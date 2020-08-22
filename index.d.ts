@@ -7,17 +7,13 @@ import type {
   PoolConfig as PgPoolConfig,
 } from 'pg';
 
-type CallbackArgs<TResult> =
-  | [error: null, result: TResult]
-  | [error: unknown, result: undefined];
-
 declare function transact<TResult>(
   fn: (client: PgPoolClient) => Promise<TResult>,
 ): Promise<TResult>;
 
 declare function transact<TResult>(
   fn: (client: PgPoolClient) => Promise<TResult>,
-  cb: (...args: CallbackArgs<TResult>) => void,
+  cb: (error: Error | null, result?: TResult) => void,
 ): void;
 
 type PostgresDb = {
