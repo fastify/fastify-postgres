@@ -8,12 +8,12 @@ import type {
 } from 'pg';
 
 declare function transact<TResult>(
-  fn: (client: PgPoolClient) => Promise<TResult>,
+  fn: (client: PgPoolClient) => Promise<TResult>
 ): Promise<TResult>;
 
 declare function transact<TResult>(
   fn: (client: PgPoolClient) => Promise<TResult>,
-  cb: (error: Error | null, result?: TResult) => void,
+  cb: (error: Error | null, result?: TResult) => void
 ): void;
 
 type PostgresDb = {
@@ -24,7 +24,7 @@ type PostgresDb = {
   transact: typeof transact;
 };
 
-type Options = {
+type PostgresPluginOptions = {
   /**
    * Custom pg adapter
    */
@@ -39,9 +39,9 @@ type Options = {
    * Instance name of fastify-postgres
    */
   name?: string;
-};
+} & PgPoolConfig;
 
-declare const PostgresPlugin: FastifyPluginCallback<Options & PgPoolConfig>;
+declare const PostgresPlugin: FastifyPluginCallback<PostgresPluginOptions>;
 
-export type { PostgresDb };
+export type { PostgresDb, PostgresPluginOptions };
 export default PostgresPlugin;
