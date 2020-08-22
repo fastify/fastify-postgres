@@ -1,6 +1,6 @@
-import type { FastifyPluginCallback } from 'fastify';
-import type PgAdapter from 'pg';
-import type {
+import { FastifyPluginCallback } from 'fastify';
+import * as PgAdapter from 'pg';
+import {
   Client as PgClient,
   Pool as PgPool,
   PoolClient as PgPoolClient,
