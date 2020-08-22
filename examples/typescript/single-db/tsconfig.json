@@ -3,7 +3,9 @@
   "compilerOptions": {
     /* Basic Options */
     "noEmit": true,
-    "lib": ["ES2020"],
+    "lib": ["ES2018"],
+    "target": "ES2018",
+    "module": "CommonJS",
 
     /* Module Resolution Options */
     "esModuleInterop": true,
