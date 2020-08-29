@@ -1,24 +1,6 @@
 {
-  "include": ["."],
+  "extends": "@tsconfig/node10/tsconfig.json",
   "compilerOptions": {
-    /* Basic Options */
     "noEmit": true,
-    "lib": ["ES2018"],
-    "target": "ES2018",
-    "module": "CommonJS",
-
-    /* Module Resolution Options */
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "Node",
-
-    /* Strict Type-Checking Options */
-    "strict": true,
-
-    /* Additional Checks */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
   }
 }

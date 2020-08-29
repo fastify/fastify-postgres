@@ -34,6 +34,7 @@
     "fastify-plugin": "^2.0.0"
   },
   "devDependencies": {
+    "@tsconfig/node10": "^1.0.7",
     "@types/pg": "^7.14.4",
     "fastify": "^3.0.0",
     "pg": "^8.2.1",
