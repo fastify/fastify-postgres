@@ -1,34 +1,28 @@
 import { FastifyPluginCallback } from 'fastify';
-import * as PgAdapter from 'pg';
-import {
-  Client as PgClient,
-  Pool as PgPool,
-  PoolClient as PgPoolClient,
-  PoolConfig as PgPoolConfig,
-} from 'pg';
+import * as Pg from 'pg';
 
 declare function transact<TResult>(
-  fn: (client: PgPoolClient) => Promise<TResult>
+  fn: (client: Pg.PoolClient) => Promise<TResult>
 ): Promise<TResult>;
 
 declare function transact<TResult>(
-  fn: (client: PgPoolClient) => Promise<TResult>,
+  fn: (client: Pg.PoolClient) => Promise<TResult>,
   cb: (error: Error | null, result?: TResult) => void
 ): void;
 
 type PostgresDb = {
-  pool: PgPool;
-  Client: PgClient;
-  query: PgPool['query'];
-  connect: PgPool['connect'];
+  pool: Pg.Pool;
+  Client: Pg.Client;
+  query: Pg.Pool['query'];
+  connect: Pg.Pool['connect'];
   transact: typeof transact;
 };
 
 type PostgresPluginOptions = {
   /**
-   * Custom pg adapter
+   * Custom pg
    */
-  pg?: typeof PgAdapter;
+  pg?: typeof Pg;
 
   /**
    * Use pg-native
@@ -39,7 +33,7 @@ type PostgresPluginOptions = {
    * Instance name of fastify-postgres
    */
   name?: string;
-} & PgPoolConfig;
+} & Pg.PoolConfig;
 
 declare const fastifyPostgres: FastifyPluginCallback<PostgresPluginOptions>;
 
