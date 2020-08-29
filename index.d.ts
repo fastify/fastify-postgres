@@ -41,7 +41,7 @@ type PostgresPluginOptions = {
   name?: string;
 } & PgPoolConfig;
 
-declare const PostgresPlugin: FastifyPluginCallback<PostgresPluginOptions>;
+declare const fastifyPostgres: FastifyPluginCallback<PostgresPluginOptions>;
 
-export type { PostgresDb, PostgresPluginOptions };
-export default PostgresPlugin;
+export { fastifyPostgres, PostgresDb, PostgresPluginOptions };
+export default fastifyPostgres;

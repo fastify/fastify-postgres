@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 
-import fastifyPostgres from '../../../index';
+import { fastifyPostgres } from '../../../index';
 
 const app = fastify();
 
