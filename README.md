@@ -203,6 +203,16 @@ fastify.listen(3000, err => {
 })
 ```
 
+## TypeScript Usage
+
+Install the compiler and typings for pg module:
+
+```shell script
+npm install --save-dev typescript @types/pg
+```
+
+You can find examples in the [examples/typescript](./examples/typescript) directory.
+
 ## Development and Testing
 
 First, start postgres with:

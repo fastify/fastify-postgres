@@ -54,9 +54,11 @@ function transact (fn, cb) {
 
 function fastifyPostgres (fastify, options, next) {
   let pg = defaultPg
+
   if (options.pg) {
     pg = options.pg
   }
+
   if (options.native) {
     delete options.native
     if (!pg.native) {
