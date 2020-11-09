@@ -110,6 +110,27 @@ test('Should throw when trying to register multiple instances without giving a n
   })
 })
 
+test('Should throw when trying to register a named instance after an unnamed', (t) => {
+  t.plan(2)
+
+  const fastify = Fastify()
+  t.teardown(() => fastify.close())
+
+  fastify.register(fastifyPostgres, {
+    connectionString
+  })
+
+  fastify.register(fastifyPostgres, {
+    connectionString,
+    name: 'two'
+  })
+
+  fastify.ready((err) => {
+    t.ok(err)
+    t.is((err || {}).message, 'fastify-postgres already has an unnamed instance registered')
+  })
+})
+
 test('Should throw when trying to register duplicate connection names', (t) => {
   t.plan(2)
 
