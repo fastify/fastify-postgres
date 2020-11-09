@@ -147,6 +147,32 @@ fastify.listen(3000, err => {
 
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
 
+### Name option
+If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo` instead of `fastify.pg`
+
+```js
+const fastify = require('fastify')()
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres',
+  name: 'foo'
+})
+
+fastify.get('/user/:id', (req, reply) => {
+  fastify.pg.foo.query(
+    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+    function onResult (err, result) {
+      reply.send(err || result)
+    }
+  )
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
+
 ### Native option
 If you want to gain the maximum performances you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
 *Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
