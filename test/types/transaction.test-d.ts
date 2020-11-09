@@ -10,12 +10,6 @@ app.register(fastifyPostgres, {
   connectionString: 'postgres://user:password@host:port/db',
 });
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    pg: PostgresDb;
-  }
-}
-
 app.post('/insert-async', async () => {
   const insertQuery = `
     INSERT INTO routes(name)

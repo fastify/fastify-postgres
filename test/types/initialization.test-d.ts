@@ -1,7 +1,8 @@
 import fastify from 'fastify';
 import * as pg from 'pg';
+import { expectAssignable, expectType } from 'tsd';
 
-import fastifyPostgres from '../../index';
+import fastifyPostgres, { PostgresDb } from '../../index';
 
 const app = fastify();
 
@@ -29,4 +30,10 @@ app.register(fastifyPostgres, {
 });
 app.register(fastifyPostgres, {
   connectionString: 'postgres://user:password@host:port/db',
+});
+
+// Plugin property available
+app.after(() => {
+  expectAssignable<PostgresDb>(app.pg);
+  expectType<PostgresDb>(app.pg.users);
 });
