@@ -106,7 +106,7 @@ test('Should throw when trying to register multiple instances without giving a n
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is(err.message, 'fastify-postgres has already been registered')
+    t.is((err || {}).message, 'fastify-postgres has already been registered')
   })
 })
 
@@ -129,7 +129,7 @@ test('Should throw when trying to register duplicate connection names', (t) => {
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is(err.message, `fastify-postgres '${name}' instance name has already been registered`)
+    t.is((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
   })
 })
 
