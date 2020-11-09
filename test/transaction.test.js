@@ -4,6 +4,11 @@ const t = require('tap')
 const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
+const {
+  BAD_DB_NAME,
+  connectionString,
+  connectionStringBadDbName
+} = require('./helpers')
 
 test('When fastify.pg root namespace is used:', (t) => {
   t.test('Should be able to use transact util with a callback', (t) => {
@@ -13,7 +18,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
     })
 
     fastify.ready((err) => {
@@ -50,7 +55,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
     })
 
     fastify.ready((err) => {
@@ -87,7 +92,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
     })
 
     fastify.ready((err) => {
@@ -128,7 +133,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
     })
 
     fastify.ready((err) => {
@@ -182,7 +187,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
     })
 
     fastify.ready((err) => {
@@ -231,10 +236,9 @@ test('When fastify.pg root namespace is used:', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    const BAD_DB_NAME = 'db_that_does_not_exist'
 
     fastify.register(fastifyPostgres, {
-      connectionString: `postgres://postgres:postgres@localhost/${BAD_DB_NAME}`
+      connectionString: connectionStringBadDbName
     })
 
     fastify.ready((err) => {
@@ -259,7 +263,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'test'
     })
 
@@ -297,7 +301,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'test'
     })
 
@@ -337,7 +341,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'test'
     })
 
@@ -380,7 +384,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'test'
     })
 
@@ -435,7 +439,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.teardown(() => fastify.close())
 
     fastify.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'test'
     })
 
@@ -485,10 +489,9 @@ test('When fastify.pg.test namespace is used:', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    const BAD_DB_NAME = 'db_that_does_not_exist'
 
     fastify.register(fastifyPostgres, {
-      connectionString: `postgres://postgres:postgres@localhost/${BAD_DB_NAME}`,
+      connectionString: connectionStringBadDbName,
       name: 'test'
     })
 
