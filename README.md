@@ -238,7 +238,19 @@ Install the compiler and typings for pg module:
 npm install --save-dev typescript @types/pg
 ```
 
-You can find examples in the [examples/typescript](./examples/typescript) directory.
+Add the `pg` property to `FastifyInstance`. Like this if you use an unnamed instance:
+
+```typescript
+import type { PostgresDb } from 'fastify-postgres';
+
+declare module 'fastify' {
+  export interface FastifyInstance {
+    pg: PostgresDb;
+  }
+}
+```
+
+More examples in the [examples/typescript](./examples/typescript) directory.
 
 ## Development and Testing
 
