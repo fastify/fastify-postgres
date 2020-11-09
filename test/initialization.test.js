@@ -4,6 +4,7 @@ const t = require('tap')
 const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
+const { connectionString } = require('./helpers')
 
 test('Should be able to use native module', (t) => {
   t.plan(2)
@@ -12,7 +13,7 @@ test('Should be able to use native module', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres',
+    connectionString,
     native: true
   })
 
@@ -38,7 +39,7 @@ test('Should be able to use an alternative pg module', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres',
+    connectionString,
     pg: altPg
   })
 
@@ -64,7 +65,7 @@ test('Should not throw if registered within different scopes (with and without n
 
   fastify.register(function scopeOne (instance, opts, next) {
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres'
+      connectionString
     })
 
     next()
@@ -72,12 +73,12 @@ test('Should not throw if registered within different scopes (with and without n
 
   fastify.register(function scopeTwo (instance, opts, next) {
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'one'
     })
 
     instance.register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name: 'two'
     })
 
@@ -96,16 +97,37 @@ test('Should throw when trying to register multiple instances without giving a n
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres'
+    connectionString
   })
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres'
+    connectionString
   })
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is(err.message, 'fastify-postgres has already been registered')
+    t.is((err || {}).message, 'fastify-postgres has already been registered')
+  })
+})
+
+test('Should throw when trying to register a named instance after an unnamed', (t) => {
+  t.plan(2)
+
+  const fastify = Fastify()
+  t.teardown(() => fastify.close())
+
+  fastify.register(fastifyPostgres, {
+    connectionString
+  })
+
+  fastify.register(fastifyPostgres, {
+    connectionString,
+    name: 'two'
+  })
+
+  fastify.ready((err) => {
+    t.ok(err)
+    t.is((err || {}).message, 'fastify-postgres already has an unnamed instance registered')
   })
 })
 
@@ -118,17 +140,17 @@ test('Should throw when trying to register duplicate connection names', (t) => {
 
   fastify
     .register(fastifyPostgres, {
-      connectionString: 'postgres://postgres:postgres@localhost/postgres',
+      connectionString,
       name
     })
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres',
+    connectionString,
     name
   })
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is(err.message, `fastify-postgres '${name}' instance name has already been registered`)
+    t.is((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
   })
 })
 
@@ -139,7 +161,7 @@ test('fastify.pg namespace should exist', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres'
+    connectionString
   })
 
   fastify.ready((err) => {
@@ -159,7 +181,7 @@ test('fastify.pg.test namespace should exist', (t) => {
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString: 'postgres://postgres:postgres@localhost/postgres',
+    connectionString,
     name: 'test'
   })
 

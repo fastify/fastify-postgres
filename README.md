@@ -147,6 +147,33 @@ fastify.listen(3000, err => {
 
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
 
+### Name option
+If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo` instead of `fastify.pg`.
+You can't use both named and an unnamed postgres conenction at once.
+
+```js
+const fastify = require('fastify')()
+
+fastify.register(require('fastify-postgres'), {
+  connectionString: 'postgres://postgres@localhost/postgres',
+  name: 'foo'
+})
+
+fastify.get('/user/:id', (req, reply) => {
+  fastify.pg.foo.query(
+    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+    function onResult (err, result) {
+      reply.send(err || result)
+    }
+  )
+})
+
+fastify.listen(3000, err => {
+  if (err) throw err
+  console.log(`server listening on ${fastify.server.address().port}`)
+})
+```
+
 ### Native option
 If you want to gain the maximum performances you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
 *Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
@@ -211,9 +238,23 @@ Install the compiler and typings for pg module:
 npm install --save-dev typescript @types/pg
 ```
 
-You can find examples in the [examples/typescript](./examples/typescript) directory.
+Add the `pg` property to `FastifyInstance`. Like this if you use an unnamed instance:
+
+```typescript
+import type { PostgresDb } from 'fastify-postgres';
+
+declare module 'fastify' {
+  export interface FastifyInstance {
+    pg: PostgresDb;
+  }
+}
+```
+
+More examples in the [examples/typescript](./examples/typescript) directory.
 
 ## Development and Testing
+
+### Docker approach
 
 First, start postgres with:
 
@@ -233,6 +274,18 @@ CREATE TABLE
 
 $ npm test
 ```
+
+### Custom Postgres approach
+
+1. Set up a database of your choice oin a postgres server of your choice
+2. Create the required table using
+    ```sql
+    CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);
+    ```
+3. Specify a connection string to it in a `DATABASE_TEST_URL` environment variable when you run the tests
+    ```bash
+    DATABASE_TEST_URL="postgres://username:password@localhost/something_thats_a_test_database" npm test
+    ```
 
 ## Acknowledgements
 

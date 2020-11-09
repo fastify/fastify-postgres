@@ -85,9 +85,9 @@ function fastifyPostgres (fastify, options, next) {
   if (name) {
     if (!fastify.pg) {
       fastify.decorate('pg', {})
-    }
-
-    if (fastify.pg[name]) {
+    } else if (fastify.pg.pool instanceof pg.Pool) {
+      return next(new Error('fastify-postgres already has an unnamed instance registered'))
+    } else if (fastify.pg[name]) {
       return next(new Error(`fastify-postgres '${name}' instance name has already been registered`))
     }
 
