@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 import { Client, Pool, PoolClient, QueryResult } from 'pg';
-import { expectType } from 'tsd';
+import { expectAssignable, expectType } from 'tsd';
 
 import fastifyPostgres, { PostgresDb } from '../../index';
 
@@ -10,14 +10,8 @@ app.register(fastifyPostgres, {
   connectionString: 'postgres://user:password@host:port/db',
 });
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    pg: PostgresDb;
-  }
-}
-
 app.get('/calc', async () => {
-  expectType<PostgresDb>(app.pg);
+  expectAssignable<PostgresDb>(app.pg);
 
   expectType<Pool>(app.pg.pool);
   expectType<Client>(app.pg.Client);

@@ -37,5 +37,11 @@ type PostgresPluginOptions = {
 
 declare const fastifyPostgres: FastifyPluginCallback<PostgresPluginOptions>;
 
+declare module 'fastify' {
+  export interface FastifyInstance {
+    pg: PostgresDb & Record<string, PostgresDb>;
+  }
+}
+
 export { fastifyPostgres, PostgresDb, PostgresPluginOptions };
 export default fastifyPostgres;
