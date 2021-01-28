@@ -83,20 +83,22 @@ function fastifyPostgres (fastify, options, next) {
   fastify.addHook('onClose', (fastify, done) => pool.end(done))
 
   if (name) {
-    if (!fastify.pg) {
+    if (db[name]) {
+      return next(new Error(`fastify-postgres '${name}' is a reserved keyword`))
+    } else if (!fastify.pg) {
       fastify.decorate('pg', {})
-    } else if (fastify.pg.pool instanceof pg.Pool) {
-      return next(new Error('fastify-postgres already has an unnamed instance registered'))
     } else if (fastify.pg[name]) {
       return next(new Error(`fastify-postgres '${name}' instance name has already been registered`))
     }
 
     fastify.pg[name] = db
   } else {
-    if (fastify.pg) {
+    if (!fastify.pg) {
+      fastify.decorate('pg', db)
+    } else if (fastify.pg.pool) {
       return next(new Error('fastify-postgres has already been registered'))
     } else {
-      fastify.decorate('pg', db)
+      Object.assign(fastify.pg, db)
     }
   }
 
