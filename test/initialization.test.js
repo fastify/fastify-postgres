@@ -110,24 +110,23 @@ test('Should throw when trying to register multiple instances without giving a n
   })
 })
 
-test('Should throw when trying to register a named instance after an unnamed', (t) => {
-  t.plan(2)
+test('Should not throw when registering a named instance and an unnamed instance)', (t) => {
+  t.plan(1)
 
   const fastify = Fastify()
   t.teardown(() => fastify.close())
 
   fastify.register(fastifyPostgres, {
-    connectionString
+    connectionString,
+    name: 'one'
   })
 
   fastify.register(fastifyPostgres, {
-    connectionString,
-    name: 'two'
+    connectionString
   })
 
   fastify.ready((err) => {
-    t.ok(err)
-    t.is((err || {}).message, 'fastify-postgres already has an unnamed instance registered')
+    t.error(err)
   })
 })
 
@@ -151,6 +150,24 @@ test('Should throw when trying to register duplicate connection names', (t) => {
   fastify.ready((err) => {
     t.ok(err)
     t.is((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
+  })
+})
+
+test('Should throw when trying to register a named connection with a reserved keyword', (t) => {
+  t.plan(2)
+
+  const fastify = Fastify()
+  t.teardown(() => fastify.close())
+  const name = 'Client'
+
+  fastify.register(fastifyPostgres, {
+    connectionString,
+    name
+  })
+
+  fastify.ready((err) => {
+    t.ok(err)
+    t.is((err || {}).message, `fastify-postgres '${name}' is a reserved keyword`)
   })
 })
 

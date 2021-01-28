@@ -148,8 +148,8 @@ fastify.listen(3000, err => {
 As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
 
 ### Name option
-If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo` instead of `fastify.pg`.
-You can't use both named and an unnamed postgres conenction at once.
+If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo`.
+You can use both unnamed and named postgres connections at once. There can be only one unnamed connection, and it will be accessible as `fastify.pg`.
 
 ```js
 const fastify = require('fastify')()
