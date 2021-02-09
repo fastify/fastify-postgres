@@ -5,7 +5,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "standard && tap -J test/*.test.js && npm run test:typescript",
+    "testonly": "tap -J test/*.test.js && npm run test:typescript",
+    "test": "standard --fix && tap -J test/*.test.js && npm run test:typescript",
     "test:typescript": "tsd",
     "test:report": "standard && tap -J --coverage-report=html test/*.test.js",
     "test:verbose": "standard && tap -J test/*.test.js -Rspec",
