@@ -3,6 +3,10 @@
 const defaultPg = require('pg')
 const fp = require('fastify-plugin')
 
+const addHandler = require('./add-handler.js')
+
+const transactionFailedSymbol = Symbol('transactionFailed')
+
 function transactionUtil (pool, fn, cb) {
   pool.connect((err, client, done) => {
     if (err) return cb(err)
@@ -50,19 +54,6 @@ function transact (fn, cb) {
       return resolve(res)
     })
   })
-}
-
-// Re-usable code adds the handlers nicely
-const addHandler = (existingHandler, newHandler) => {
-  if (Array.isArray(existingHandler)) {
-    existingHandler.push(newHandler)
-  } else if (typeof existingHandler === 'function') {
-    existingHandler = [existingHandler, newHandler]
-  } else {
-    existingHandler = [newHandler]
-  }
-
-  return existingHandler
 }
 
 function fastifyPostgres (fastify, options, next) {
@@ -115,52 +106,39 @@ function fastifyPostgres (fastify, options, next) {
     }
   }
 
+  if (!fastify.hasRequestDecorator('pg')) {
+    fastify.decorateRequest('pg', null)
+  }
+
   fastify.addHook('onRoute', routeOptions => {
-    const useTransaction = routeOptions.useTransaction || (routeOptions.options && routeOptions.options.useTransaction)
+    const useTransaction = routeOptions.pg && routeOptions.pg.transact
 
     if (useTransaction) {
-      // This will rollback the transaction if the handler fails at some point
-      const onError = async (req, reply, error) => {
-        req.transactionFailed = true
+      const preHandler = async (req, reply) => {
+        const client = await pool.connect()
+        req.pg = client
+        req.pg.query('BEGIN')
+      }
 
+      const onError = (req, reply, error, done) => {
+        req[transactionFailedSymbol] = true
+        req.pg.query('ROLLBACK', done)
+      }
+
+      const onSend = async (req) => {
         try {
-          await req.pg.query('ROLLBACK')
-        } catch (err) {
-          await req.pg.query('ROLLBACK')
+          if (!req[transactionFailedSymbol]) {
+            await req.pg.query('COMMIT')
+          }
+        } finally {
+          req.pg.release()
         }
       }
 
+      routeOptions.preHandler = addHandler(routeOptions.preHandler, preHandler)
       routeOptions.onError = addHandler(routeOptions.onError, onError)
+      routeOptions.onSend = addHandler(routeOptions.onSend, onSend)
     }
-
-    const preHandler = async (req, reply) => {
-      const client = await pool.connect()
-      req.pg = client
-
-      if (useTransaction) {
-        await req.pg.query('BEGIN')
-      }
-    }
-
-    // This will commit the transaction (or rollback if that fails) and also always
-    // release the client, regardless of error state or useTransaction value
-    const onSend = async (req, reply, payload) => {
-      try {
-        if (!req.transactionFailed && useTransaction) {
-          await req.pg.query('COMMIT')
-        }
-      } catch (err) {
-        if (useTransaction) {
-          await req.pg.query('ROLLBACK')
-        }
-      } finally {
-        req.pg.release()
-      }
-    }
-
-    // Add these handlers
-    routeOptions.preHandler = addHandler(routeOptions.preHandler, preHandler)
-    routeOptions.onSend = addHandler(routeOptions.onSend, onSend)
   })
 
   next()
