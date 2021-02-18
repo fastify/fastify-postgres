@@ -56,6 +56,10 @@ function transact (fn, cb) {
   })
 }
 
+function extractRequestClient (req, connectionId) {
+  return connectionId.length ? req.pg[connectionId] : req.pg
+}
+
 function fastifyPostgres (fastify, options, next) {
   let pg = defaultPg
 
@@ -111,27 +115,45 @@ function fastifyPostgres (fastify, options, next) {
   }
 
   fastify.addHook('onRoute', routeOptions => {
-    const useTransaction = routeOptions.pg && routeOptions.pg.transact
+    const transactionConnection = routeOptions.pg && routeOptions.pg.transact
 
-    if (useTransaction) {
+    if (transactionConnection) {
       const preHandler = async (req, reply) => {
         const client = await pool.connect()
-        req.pg = client
-        req.pg.query('BEGIN')
+
+        if (name) {
+          req.pg = {}
+          if (client[name]) {
+            throw new Error(`pg client '${name}' is a reserved keyword`)
+          } else if (req.pg[name]) {
+            throw new Error(`request client '${name}' has already been registered`)
+          }
+
+          req.pg[name] = client
+        } else {
+          if (req.pg) {
+            throw new Error('request client has already been registered')
+          } else {
+            req.pg = client
+          }
+        }
+
+        extractRequestClient(req, transactionConnection).query('BEGIN')
       }
 
       const onError = (req, reply, error, done) => {
         req[transactionFailedSymbol] = true
-        req.pg.query('ROLLBACK', done)
+        extractRequestClient(req, transactionConnection).query('ROLLBACK', done)
       }
 
       const onSend = async (req) => {
+        const requestClient = extractRequestClient(req, transactionConnection)
         try {
           if (!req[transactionFailedSymbol]) {
-            await req.pg.query('COMMIT')
+            await requestClient.query('COMMIT')
           }
         } finally {
-          req.pg.release()
+          requestClient.release()
         }
       }
 
