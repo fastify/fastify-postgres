@@ -56,8 +56,16 @@ function transact (fn, cb) {
   })
 }
 
-function extractRequestClient (req, connectionId) {
-  return connectionId.length ? req.pg[connectionId] : req.pg
+function extractRequestClient (req, transactionConnection) {
+  if (transactionConnection.length) {
+    const requestClient = req.pg[transactionConnection]
+    if (!requestClient) {
+      throw new Error(`request client '${transactionConnection}' does not exist`)
+    }
+    return req.pg[transactionConnection]
+  }
+
+  return req.pg
 }
 
 function fastifyPostgres (fastify, options, next) {
@@ -122,7 +130,10 @@ function fastifyPostgres (fastify, options, next) {
         const client = await pool.connect()
 
         if (name) {
-          req.pg = {}
+          if (!req.pg) {
+            req.pg = {}
+          }
+
           if (client[name]) {
             throw new Error(`pg client '${name}' is a reserved keyword`)
           } else if (req.pg[name]) {
