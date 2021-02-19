@@ -57,15 +57,15 @@ function transact (fn, cb) {
 }
 
 function extractRequestClient (req, transact) {
-  if (transact.length) {
-    const requestClient = req.pg[transact]
-    if (!requestClient) {
-      throw new Error(`request client '${transact}' does not exist`)
-    }
-    return req.pg[transact]
+  if (typeof transact !== 'string') {
+    return req.pg
   }
 
-  return req.pg
+  const requestClient = req.pg[transact]
+  if (!requestClient) {
+    throw new Error(`request client '${transact}' does not exist`)
+  }
+  return requestClient
 }
 
 function fastifyPostgres (fastify, options, next) {
@@ -158,7 +158,7 @@ function fastifyPostgres (fastify, options, next) {
         }
       }
 
-      extractRequestClient(req, transact).query('BEGIN')
+      client.query('BEGIN')
     }
 
     const onError = (req, reply, error, done) => {

@@ -31,10 +31,7 @@ test('fastify postgress useTransaction route option', t => {
       reply.send('complete')
     })
 
-    await fastify.inject({
-      method: 'GET',
-      url: '/pass'
-    })
+    await fastify.inject({ url: '/pass' })
 
     const response = await fastify.inject({
       method: 'GET',
@@ -67,10 +64,7 @@ test('fastify postgress useTransaction route option', t => {
       reply.send('complete')
     })
 
-    await fastify.inject({
-      method: 'GET',
-      url: '/pass'
-    })
+    await fastify.inject({ url: '/pass' })
 
     const response = await fastify.inject({
       method: 'GET',
@@ -102,10 +96,7 @@ test('fastify postgress useTransaction route option', t => {
       reply.send('complete')
     })
 
-    await fastify.inject({
-      method: 'GET',
-      url: '/fail'
-    })
+    await fastify.inject({ url: '/fail' })
 
     const response = await fastify.inject({
       method: 'GET',
@@ -133,10 +124,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
       t.is(req.pg, null)
     })
 
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    })
+    fastify.inject({ url: '/' })
   })
   test('name set and transact not set', t => {
     t.plan(1)
@@ -153,10 +141,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
       t.is(req.pg, null)
     })
 
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    })
+    fastify.inject({ url: '/' })
   })
   test('name set and transact set to true', t => {
     t.plan(1)
@@ -173,10 +158,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
       t.is(req.pg, null)
     })
 
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    })
+    fastify.inject({ url: '/' })
   })
   test('name not set and transact set to string', t => {
     t.plan(1)
@@ -192,10 +174,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
       t.is(req.pg, null)
     })
 
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    })
+    fastify.inject({ url: '/' })
   })
   test('name and transact set to different strings', t => {
     t.plan(1)
@@ -212,10 +191,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
       t.is(req.pg, null)
     })
 
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    })
+    fastify.inject({ url: '/' })
   })
   t.end()
 })
