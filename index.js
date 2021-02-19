@@ -56,13 +56,13 @@ function transact (fn, cb) {
   })
 }
 
-function extractRequestClient (req, transactionConnection) {
-  if (transactionConnection.length) {
-    const requestClient = req.pg[transactionConnection]
+function extractRequestClient (req, transact) {
+  if (transact.length) {
+    const requestClient = req.pg[transact]
     if (!requestClient) {
-      throw new Error(`request client '${transactionConnection}' does not exist`)
+      throw new Error(`request client '${transact}' does not exist`)
     }
-    return req.pg[transactionConnection]
+    return req.pg[transact]
   }
 
   return req.pg
@@ -123,55 +123,63 @@ function fastifyPostgres (fastify, options, next) {
   }
 
   fastify.addHook('onRoute', routeOptions => {
-    const transactionConnection = routeOptions.pg && routeOptions.pg.transact
+    const transact = routeOptions && routeOptions.pg && routeOptions.pg.transact
 
-    if (transactionConnection) {
-      const preHandler = async (req, reply) => {
-        const client = await pool.connect()
-
-        if (name) {
-          if (!req.pg) {
-            req.pg = {}
-          }
-
-          if (client[name]) {
-            throw new Error(`pg client '${name}' is a reserved keyword`)
-          } else if (req.pg[name]) {
-            throw new Error(`request client '${name}' has already been registered`)
-          }
-
-          req.pg[name] = client
-        } else {
-          if (req.pg) {
-            throw new Error('request client has already been registered')
-          } else {
-            req.pg = client
-          }
-        }
-
-        extractRequestClient(req, transactionConnection).query('BEGIN')
-      }
-
-      const onError = (req, reply, error, done) => {
-        req[transactionFailedSymbol] = true
-        extractRequestClient(req, transactionConnection).query('ROLLBACK', done)
-      }
-
-      const onSend = async (req) => {
-        const requestClient = extractRequestClient(req, transactionConnection)
-        try {
-          if (!req[transactionFailedSymbol]) {
-            await requestClient.query('COMMIT')
-          }
-        } finally {
-          requestClient.release()
-        }
-      }
-
-      routeOptions.preHandler = addHandler(routeOptions.preHandler, preHandler)
-      routeOptions.onError = addHandler(routeOptions.onError, onError)
-      routeOptions.onSend = addHandler(routeOptions.onSend, onSend)
+    if (!transact) {
+      return
     }
+    if (typeof transact === 'string' && transact !== name) {
+      return
+    }
+    if (name && transact === true) {
+      return
+    }
+
+    const preHandler = async (req, reply) => {
+      const client = await pool.connect()
+
+      if (name) {
+        if (!req.pg) {
+          req.pg = {}
+        }
+
+        if (client[name]) {
+          throw new Error(`pg client '${name}' is a reserved keyword`)
+        } else if (req.pg[name]) {
+          throw new Error(`request client '${name}' has already been registered`)
+        }
+
+        req.pg[name] = client
+      } else {
+        if (req.pg) {
+          throw new Error('request client has already been registered')
+        } else {
+          req.pg = client
+        }
+      }
+
+      extractRequestClient(req, transact).query('BEGIN')
+    }
+
+    const onError = (req, reply, error, done) => {
+      req[transactionFailedSymbol] = true
+      extractRequestClient(req, transact).query('ROLLBACK', done)
+    }
+
+    const onSend = async (req) => {
+      const requestClient = extractRequestClient(req, transact)
+      try {
+        if (!req[transactionFailedSymbol]) {
+          await requestClient.query('COMMIT')
+        }
+      } finally {
+        requestClient.release()
+      }
+    }
+
+    routeOptions.preHandler = addHandler(routeOptions.preHandler, preHandler)
+    routeOptions.onError = addHandler(routeOptions.onError, onError)
+    routeOptions.onSend = addHandler(routeOptions.onSend, onSend)
   })
 
   next()
