@@ -230,6 +230,33 @@ fastify.listen(3000, err => {
 })
 ```
 
+### Transact route option
+It's possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect. 
+
+`query` commands can then be accessed at `request.pg` or `request.pg[name]` and `transact` can be set for either the root pg client with value `true` or for a pg client at a particular namespace with value `name`. Note that the namespace needs to be set when registering the plugin in order to be available on the request object.
+
+```js
+// transact set for the route pg client
+fastify.get('/user/:id', { pg: { transact: true } }, (req, reply) => {
+  // transaction wrapped queries, NO error handling
+  req.pg.query('SELECT username FROM users WHERE id=1')
+  req.pg.query('SELECT username FROM users WHERE id=2')
+  req.pg.query('SELECT username FROM users WHERE id=3')
+})
+
+// transact set for a pg client at name
+fastify.get('/user/:id', { pg: { transact: 'foo' } }, (req, reply) => {
+  // transaction wrapped queries, NO error handling
+  req.pg.foo.query('SELECT username FROM users WHERE id=1')
+  req.pg.foo.query('SELECT username FROM users WHERE id=2')
+  req.pg.foo.query('SELECT username FROM users WHERE id=3')
+})
+```
+
+Important: rolling back a transaction relies on the handler failing and being caught by an `onError` hook. This means that the transaction wrapped route handler mustn't catch any errors internally.
+
+In the plugin this works by using the `preHandler` hook to open the transaction, then the `onError` and `onSend` hooks to commit or rollback and release the client back to the pool.
+
 ## TypeScript Usage
 
 Install the compiler and typings for pg module:
