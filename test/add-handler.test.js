@@ -2,7 +2,7 @@
 
 const t = require('tap')
 const test = t.test
-const addHandler = require('../add-handler')
+const addHandler = require('../lib/add-handler')
 
 test('addHandler - ', t => {
   test('when existing handler is not defined', t => {

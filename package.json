@@ -5,7 +5,6 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "testonly": "tap -J test/*.test.js && npm run test:typescript",
     "test": "standard && tap -J test/*.test.js && npm run test:typescript",
     "test:typescript": "tsd",
     "test:report": "standard && tap -J --coverage-report=html test/*.test.js",

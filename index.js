@@ -3,7 +3,7 @@
 const defaultPg = require('pg')
 const fp = require('fastify-plugin')
 
-const addHandler = require('./add-handler.js')
+const addHandler = require('./lib/add-handler.js')
 
 const transactionFailedSymbol = Symbol('transactionFailed')
 
