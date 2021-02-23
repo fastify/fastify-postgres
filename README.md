@@ -253,7 +253,7 @@ fastify.get('/user/:id', { pg: { transact: 'foo' } }, (req, reply) => {
 })
 ```
 
-Important: rolling back a transaction relies on the handler failing and being caught by an `onError` hook. This means that the transaction wrapped route handler mustn't catch any errors internally.
+Important: rolling back a transaction relies on the handler failing and being caught by an `onError` hook. This means that the transaction wrapped route handler must not catch any errors internally.
 
 In the plugin this works by using the `preHandler` hook to open the transaction, then the `onError` and `onSend` hooks to commit or rollback and release the client back to the pool.
 
