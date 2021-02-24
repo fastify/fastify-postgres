@@ -3,6 +3,10 @@
 const defaultPg = require('pg')
 const fp = require('fastify-plugin')
 
+const addHandler = require('./lib/add-handler.js')
+
+const transactionFailedSymbol = Symbol('transactionFailed')
+
 function transactionUtil (pool, fn, cb) {
   pool.connect((err, client, done) => {
     if (err) return cb(err)
@@ -50,6 +54,18 @@ function transact (fn, cb) {
       return resolve(res)
     })
   })
+}
+
+function extractRequestClient (req, transact) {
+  if (typeof transact !== 'string') {
+    return req.pg
+  }
+
+  const requestClient = req.pg[transact]
+  if (!requestClient) {
+    throw new Error(`request client '${transact}' does not exist`)
+  }
+  return requestClient
 }
 
 function fastifyPostgres (fastify, options, next) {
@@ -101,6 +117,70 @@ function fastifyPostgres (fastify, options, next) {
       Object.assign(fastify.pg, db)
     }
   }
+
+  if (!fastify.hasRequestDecorator('pg')) {
+    fastify.decorateRequest('pg', null)
+  }
+
+  fastify.addHook('onRoute', routeOptions => {
+    const transact = routeOptions && routeOptions.pg && routeOptions.pg.transact
+
+    if (!transact) {
+      return
+    }
+    if (typeof transact === 'string' && transact !== name) {
+      return
+    }
+    if (name && transact === true) {
+      return
+    }
+
+    const preHandler = async (req, reply) => {
+      const client = await pool.connect()
+
+      if (name) {
+        if (!req.pg) {
+          req.pg = {}
+        }
+
+        if (client[name]) {
+          throw new Error(`pg client '${name}' is a reserved keyword`)
+        } else if (req.pg[name]) {
+          throw new Error(`request client '${name}' has already been registered`)
+        }
+
+        req.pg[name] = client
+      } else {
+        if (req.pg) {
+          throw new Error('request client has already been registered')
+        } else {
+          req.pg = client
+        }
+      }
+
+      client.query('BEGIN')
+    }
+
+    const onError = (req, reply, error, done) => {
+      req[transactionFailedSymbol] = true
+      extractRequestClient(req, transact).query('ROLLBACK', done)
+    }
+
+    const onSend = async (req) => {
+      const requestClient = extractRequestClient(req, transact)
+      try {
+        if (!req[transactionFailedSymbol]) {
+          await requestClient.query('COMMIT')
+        }
+      } finally {
+        requestClient.release()
+      }
+    }
+
+    routeOptions.preHandler = addHandler(routeOptions.preHandler, preHandler)
+    routeOptions.onError = addHandler(routeOptions.onError, onError)
+    routeOptions.onSend = addHandler(routeOptions.onSend, onSend)
+  })
 
   next()
 }

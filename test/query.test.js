@@ -4,6 +4,7 @@ const t = require('tap')
 const test = t.test
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
+
 const {
   BAD_DB_NAME,
   connectionString,
@@ -134,7 +135,7 @@ test('When fastify.pg root namespace is used:', (t) => {
   t.end()
 })
 
-test('When fastify.pg.test namespace is used:', (t) => {
+test('When fastify.pg custom namespace is used:', (t) => {
   t.test('Should be able to connect and perform a query', (t) => {
     t.plan(4)
 

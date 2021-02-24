@@ -110,7 +110,7 @@ test('Should throw when trying to register multiple instances without giving a n
   })
 })
 
-test('Should not throw when registering a named instance and an unnamed instance)', (t) => {
+test('Should not throw when registering a named instance and an unnamed instance', (t) => {
   t.plan(1)
 
   const fastify = Fastify()
@@ -191,7 +191,7 @@ test('fastify.pg namespace should exist', (t) => {
   })
 })
 
-test('fastify.pg.test namespace should exist', (t) => {
+test('fastify.pg custom namespace should exist if a name is set', (t) => {
   t.plan(6)
 
   const fastify = Fastify()
