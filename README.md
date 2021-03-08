@@ -4,16 +4,16 @@
 ![CI
 workflow](https://github.com/fastify/fastify-postgres/workflows/CI%20workflow/badge.svg)
 
-Fastify PostgreSQL connection plugin, with this you can share the same PostgreSQL connection pool in every part of your server.
-Under the hood the [node-postgres](https://github.com/brianc/node-postgres) is used, the options that you pass to `register` will be passed to the PostgreSQL pool builder.
+Fastify PostgreSQL connection plugin; with this, you can share the same PostgreSQL connection pool in every part of your server.
+Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used, the options that you pass to `register` will be passed to the PostgreSQL pool builder.
 
 ## Install
 ```
 npm i pg fastify-postgres --save
 ```
 ## Usage
-Add it to you project with `register` and you are done!
-This plugin will add the `pg` namespace in your Fastify instance, with the following properties:
+Add it to your project with `register` and you are done!
+This plugin will add the `pg` namespace to your Fastify instance, with the following properties:
 ```
 connect: the function to get a connection from the pool
 pool: the pool instance
@@ -145,7 +145,7 @@ fastify.listen(3000, err => {
 })
 ```
 
-As you can see there is no need to close the client, since is done internally. Promises and async await are supported as well.
+As you can see there is no need to close the client, since it is done internally. Promises and async await are supported as well.
 
 ### Name option
 If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo`.
@@ -175,9 +175,9 @@ fastify.listen(3000, err => {
 ```
 
 ### Native option
-If you want to gain the maximum performances you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
+If you want maximum performance you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
 *Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
-Note: trying to use native options without successfully installation of `pg-native` will get a warning and fallback to regular `pg` module.
+Note: trying to use native options without successfully installation of `pg-native` will return a warning and fallback to regular `pg` module.
 
 ```js
 const fastify = require('fastify')()
@@ -231,7 +231,7 @@ fastify.listen(3000, err => {
 ```
 
 ### Transact route option
-It's possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect. 
+It is possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect. 
 
 `query` commands can then be accessed at `request.pg` or `request.pg[name]` and `transact` can be set for either the root pg client with value `true` or for a pg client at a particular namespace with value `name`. Note that the namespace needs to be set when registering the plugin in order to be available on the request object.
 
