@@ -307,7 +307,7 @@ $ npm test
 ## Acknowledgements
 
 This project is kindly sponsored by:
-- [nearForm](https://nearform.com)
+- [nearForm](https://www.nearform.com)
 - [LetzDoIt](https://www.letzdoitapp.com/)
 
 ## License
