@@ -14,19 +14,19 @@ if [ -d "${TMP_DIR}" ]; then
   rm -rf "${TMP_DIR}"
 fi
 mkdir -p "${TMP_DIR}"
-curl -s https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz | \
+curl -s https://www.openssl.org/source/openssl-"${OPENSSL_VERSION}".tar.gz | \
   tar -C "${TMP_DIR}" -xzf -
-pushd "${TMP_DIR}/openssl-${OPENSSL_VERSION}"
+pushd "${TMP_DIR}/openssl-${OPENSSL_VERSION}" || exit
 if [ -d "${OPENSSL_DIR}" ]; then
   rm -rf "${OPENSSL_DIR}"
 fi
 ./Configure \
-  --prefix=${OPENSSL_DIR} \
+  --prefix="${OPENSSL_DIR}" \
   enable-crypto-mdebug enable-crypto-mdebug-backtrace \
   linux-x86_64
-make -s $JOBS
+make -s "$JOBS"
 make install_sw
-popd
+popd || exit
 
 export PATH="${OPENSSL_DIR}/bin:${PATH}"
 export CFLAGS="-I${OPENSSL_DIR}/include"

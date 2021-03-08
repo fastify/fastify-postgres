@@ -1,6 +1,6 @@
 # fastify-postgres
 
-![CI](https://github.com/fastify/fastify-postgres/workflows/CI%20workflow/badge.svg)
+![CI](https://github.com/fastify/fastify-postgres/workflows/CI/badge.svg)
 [![NPM version](https://img.shields.io/npm/v/fastify-postgres.svg?style=flat)](https://www.npmjs.com/package/fastify-postgres)
 [![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-postgres/badge.svg)](https://snyk.io/test/github/fastify/fastify-postgres)
 [![Coverage Status](https://coveralls.io/repos/github/fastify/fastify-postgres/badge.svg?branch=master)](https://coveralls.io/github/fastify/fastify-postgres?branch=master)
