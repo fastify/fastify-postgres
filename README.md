@@ -1,8 +1,10 @@
 # fastify-postgres
 
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](http://standardjs.com/)
-![CI
-workflow](https://github.com/fastify/fastify-postgres/workflows/CI%20workflow/badge.svg)
+![CI](https://github.com/fastify/fastify-postgres/workflows/CI%20workflow/badge.svg)
+[![NPM version](https://img.shields.io/npm/v/fastify-postgres.svg?style=flat)](https://www.npmjs.com/package/fastify-postgres)
+[![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-postgres/badge.svg)](https://snyk.io/test/github/fastify/fastify-postgres)
+[![Coverage Status](https://coveralls.io/repos/github/fastify/fastify-postgres/badge.svg?branch=master)](https://coveralls.io/github/fastify/fastify-postgres?branch=master)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
 
 Fastify PostgreSQL connection plugin; with this, you can share the same PostgreSQL connection pool in every part of your server.
 Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used, the options that you pass to `register` will be passed to the PostgreSQL pool builder.
