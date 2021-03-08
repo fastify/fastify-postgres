@@ -6,4 +6,4 @@ sudo updatedb
 source ./ci_scripts/install_libpq.sh
 sudo updatedb
 sudo ldconfig
-cd $BUILD_DIR
+cd "$BUILD_DIR" || exit
