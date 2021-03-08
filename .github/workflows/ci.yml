@@ -1,4 +1,4 @@
-name: CI workflow
+name: CI
 
 on:
   push:
@@ -11,14 +11,12 @@ on:
       - '*.md'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14]
-    
-    name: Node.js ${{ matrix.node }}
-    
+        node-version: [10.x, 12.x, 14.x]
+
     services:
       postgres:
         image: postgres:11-alpine
@@ -33,9 +31,16 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: |
+        npm install
 
     - name: CI environment setup
       run: |
@@ -44,11 +49,13 @@ jobs:
         chmod 600 .pgpass
         PGPASSFILE=.pgpass psql -h localhost -p ${{ job.services.postgres.ports[5432] }} -d postgres -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres
 
-    - name: Install
-      run: npm install
+    - name: Check licenses
+      run: |
+        npm run license-checker --if-present
 
-    - name: Run tests      
-      run: npm run test:ci
+    - name: Run tests
+      run: |
+        npm run test:ci
 
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@v1.1.2
@@ -58,7 +65,7 @@ jobs:
         flag-name: run-${{ matrix.node-version }}-${{ matrix.os }}
 
   coverage:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls Finished
@@ -68,7 +75,7 @@ jobs:
           parallel-finished: true
 
   automerge:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: fastify/github-action-merge-dependabot@v1
