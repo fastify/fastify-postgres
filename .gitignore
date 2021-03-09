@@ -124,3 +124,7 @@ dist
 # lock files
 package-lock.json
 yarn.lock
+
+# editor files
+.vscode
+.idea
