@@ -3,6 +3,7 @@
 const t = require('tap')
 const test = t.test
 const Fastify = require('fastify')
+const pg = require('pg')
 const fastifyPostgres = require('../index')
 const { connectionString } = require('./helpers')
 
@@ -23,7 +24,41 @@ test('Should be able to use native module', (t) => {
     fastify.pg
       .query('SELECT 1 AS one')
       .then((result) => {
-        t.is(result.rows[0].one, 1)
+        t.equal(result.rows[0].one, 1)
+      })
+      .catch((err) => {
+        t.fail(err)
+      })
+  })
+})
+
+test('Should print warning when native module not installed', (t) => {
+  t.plan(3)
+
+  const mockedFastifyPostgres = t.mock('../index', {
+    pg: { ...pg, native: null }
+  })
+  const realConsole = global.console
+  global.console.warn = (msg) => t.equal(msg, "pg-native not installed, can't use native option - fallback to pg module")
+
+  const fastify = Fastify()
+  t.teardown(() => {
+    fastify.close()
+    global.console = realConsole
+  })
+
+  fastify.register(mockedFastifyPostgres, {
+    connectionString,
+    native: true
+  })
+
+  fastify.ready((err) => {
+    t.error(err)
+
+    fastify.pg
+      .query('SELECT 1 AS one')
+      .then((result) => {
+        t.equal(result.rows[0].one, 1)
       })
       .catch((err) => {
         t.fail(err)
@@ -49,7 +84,7 @@ test('Should be able to use an alternative pg module', (t) => {
     fastify.pg
       .query('SELECT 1 AS one')
       .then((result) => {
-        t.is(result.rows[0].one, 1)
+        t.equal(result.rows[0].one, 1)
       })
       .catch((err) => {
         t.fail(err)
@@ -106,7 +141,7 @@ test('Should throw when trying to register multiple instances without giving a n
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is((err || {}).message, 'fastify-postgres has already been registered')
+    t.equal((err || {}).message, 'fastify-postgres has already been registered')
   })
 })
 
@@ -149,7 +184,7 @@ test('Should throw when trying to register duplicate connection names', (t) => {
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
+    t.equal((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
   })
 })
 
@@ -167,7 +202,7 @@ test('Should throw when trying to register a named connection with a reserved ke
 
   fastify.ready((err) => {
     t.ok(err)
-    t.is((err || {}).message, `fastify-postgres '${name}' is a reserved keyword`)
+    t.equal((err || {}).message, `fastify-postgres '${name}' is a reserved keyword`)
   })
 })
 

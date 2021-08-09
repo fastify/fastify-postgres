@@ -38,7 +38,7 @@ test('fastify postgress useTransaction route option', t => {
       url: '/count-users'
     })
 
-    t.is(extractUserCount(response), 2)
+    t.equal(extractUserCount(response), 2)
   })
   test('queries that succeed provided to a namespace', async t => {
     const fastify = Fastify()
@@ -71,7 +71,7 @@ test('fastify postgress useTransaction route option', t => {
       url: '/count-users'
     })
 
-    t.is(extractUserCount(response), 2)
+    t.equal(extractUserCount(response), 2)
   })
   test('queries that fail provided', async t => {
     const fastify = Fastify()
@@ -103,7 +103,7 @@ test('fastify postgress useTransaction route option', t => {
       url: '/count-users'
     })
 
-    t.is(extractUserCount(response), 0)
+    t.equal(extractUserCount(response), 0)
   })
 
   t.end()
@@ -121,7 +121,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
     })
 
     fastify.get('/', (req, reply) => {
-      t.is(req.pg, null)
+      t.equal(req.pg, null)
     })
 
     fastify.inject({ url: '/' })
@@ -138,7 +138,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
     })
 
     fastify.get('/', (req, reply) => {
-      t.is(req.pg, null)
+      t.equal(req.pg, null)
     })
 
     fastify.inject({ url: '/' })
@@ -155,7 +155,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
     })
 
     fastify.get('/', { pg: { transact: true } }, (req, reply) => {
-      t.is(req.pg, null)
+      t.equal(req.pg, null)
     })
 
     fastify.inject({ url: '/' })
@@ -171,7 +171,7 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
     })
 
     fastify.get('/', { pg: { transact: 'test' } }, (req, reply) => {
-      t.is(req.pg, null)
+      t.equal(req.pg, null)
     })
 
     fastify.inject({ url: '/' })
@@ -188,10 +188,89 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
     })
 
     fastify.get('/', { pg: { transact: 'different' } }, (req, reply) => {
-      t.is(req.pg, null)
+      t.equal(req.pg, null)
     })
 
     fastify.inject({ url: '/' })
+  })
+  t.end()
+})
+
+test('incorrect combinations of registrationOptions.name and routeOptions.pg.transact should throw errors', t => {
+  t.test('name set as reserved keyword', t => {
+    t.plan(2)
+
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    const name = 'user'
+
+    fastify.register(fastifyPostgres, {
+      connectionString,
+      name
+    })
+
+    fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
+
+    fastify.inject({ url: '/' }, (err, response) => {
+      t.error(err)
+      t.same(response.json(), {
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: `request client '${name}' does not exist`
+      })
+    })
+  })
+
+  t.test('named pg client has already registered', t => {
+    t.plan(2)
+
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    const name = 'test'
+
+    fastify.register(fastifyPostgres, {
+      connectionString,
+      name
+    })
+    fastify.addHook('onRequest', async (req, reply) => {
+      req.pg = { [name]: await fastify.pg[name].connect() }
+    })
+    fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
+
+    fastify.inject({ url: '/' }, (err, response) => {
+      t.error(err)
+      t.same(response.json(), {
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: `request client '${name}' has already been registered`
+      })
+    })
+  })
+
+  t.test('pg client has already registered', t => {
+    t.plan(2)
+
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    fastify.register(fastifyPostgres, {
+      connectionString
+    })
+    fastify.addHook('onRequest', async (req, reply) => {
+      req.pg = await fastify.pg.connect()
+    })
+    fastify.get('/', { pg: { transact: true } }, (req, reply) => {})
+
+    fastify.inject({ url: '/' }, (err, response) => {
+      t.error(err)
+      t.same(response.json(), {
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'request client has already been registered'
+      })
+    })
   })
   t.end()
 })

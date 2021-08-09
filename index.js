@@ -144,14 +144,17 @@ function fastifyPostgres (fastify, options, next) {
         }
 
         if (client[name]) {
+          client.release()
           throw new Error(`pg client '${name}' is a reserved keyword`)
         } else if (req.pg[name]) {
+          client.release()
           throw new Error(`request client '${name}' has already been registered`)
         }
 
         req.pg[name] = client
       } else {
         if (req.pg) {
+          client.release()
           throw new Error('request client has already been registered')
         } else {
           req.pg = client

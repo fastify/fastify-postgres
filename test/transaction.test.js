@@ -3,6 +3,7 @@
 const t = require('tap')
 const test = t.test
 const Fastify = require('fastify')
+const pg = require('pg')
 const fastifyPostgres = require('../index')
 const {
   BAD_DB_NAME,
@@ -17,9 +18,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
-    })
+    fastify.register(fastifyPostgres, { connectionString })
 
     fastify.ready((err) => {
       t.error(err)
@@ -31,14 +30,14 @@ test('When fastify.pg root namespace is used:', (t) => {
           ]),
         function (err, result) {
           t.error(err)
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'root-with-callback')
+              t.equal(result.rows[0].username, 'root-with-callback')
             })
             .catch((err) => {
               t.fail(err)
@@ -54,9 +53,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
-    })
+    fastify.register(fastifyPostgres, { connectionString })
 
     fastify.ready((err) => {
       t.error(err)
@@ -66,14 +63,14 @@ test('When fastify.pg root namespace is used:', (t) => {
           client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['root-with-promise'])
         )
         .then((result) => {
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'root-with-promise')
+              t.equal(result.rows[0].username, 'root-with-promise')
             })
             .catch((err) => {
               t.fail(err)
@@ -91,9 +88,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
-    })
+    fastify.register(fastifyPostgres, { connectionString })
 
     fastify.ready((err) => {
       t.error(err)
@@ -109,14 +104,14 @@ test('When fastify.pg root namespace is used:', (t) => {
           ),
         function (err, result) {
           t.error(err)
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'root-commit-callback')
+              t.equal(result.rows[0].username, 'root-commit-callback')
             })
             .catch((err) => {
               t.fail(err)
@@ -132,9 +127,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
-    })
+    fastify.register(fastifyPostgres, { connectionString })
 
     fastify.ready((err) => {
       t.error(err)
@@ -154,7 +147,7 @@ test('When fastify.pg root namespace is used:', (t) => {
                 .query('SELECT * FROM users WHERE id = $1', [userId])
                 .then((result) => {
                   t.ok(result)
-                  t.is(result.rows[0].username, 'root-rollback-user-callback')
+                  t.equal(result.rows[0].username, 'root-rollback-user-callback')
                 })
                 .then(() => {
                   throw new Error('We make it throw on purpose to trigger a rollback')
@@ -163,14 +156,14 @@ test('When fastify.pg root namespace is used:', (t) => {
         },
         function (err, result) {
           t.ok(err)
-          t.is(err.message, 'We make it throw on purpose to trigger a rollback')
-          t.is(result, undefined)
+          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
+          t.equal(result, undefined)
 
           fastify.pg
             .query('SELECT * FROM users WHERE username = \'root-rollback-user-callback\'')
             .then((result) => {
               t.ok(result)
-              t.is(result.rows.length, 0)
+              t.equal(result.rows.length, 0)
             })
             .catch((err) => {
               t.fail(err)
@@ -186,9 +179,7 @@ test('When fastify.pg root namespace is used:', (t) => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString: process.env.DATABASE_TEST_URL || 'postgres://postgres:postgres@localhost/postgres'
-    })
+    fastify.register(fastifyPostgres, { connectionString })
 
     fastify.ready((err) => {
       t.error(err)
@@ -208,7 +199,7 @@ test('When fastify.pg root namespace is used:', (t) => {
                 .query('SELECT * FROM users WHERE id = $1', [userId])
                 .then((result) => {
                   t.ok(result)
-                  t.is(result.rows[0].username, 'root-rollback-user-promise')
+                  t.equal(result.rows[0].username, 'root-rollback-user-promise')
                 })
                 .then(() => {
                   throw new Error('We make it throw on purpose to trigger a rollback')
@@ -217,13 +208,13 @@ test('When fastify.pg root namespace is used:', (t) => {
         )
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, 'We make it throw on purpose to trigger a rollback')
+          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
 
           fastify.pg
             .query('SELECT * FROM users WHERE username = \'root-rollback-user-promise\'')
             .then((result) => {
               t.ok(result)
-              t.is(result.rows.length, 0)
+              t.equal(result.rows.length, 0)
             })
             .catch((err) => {
               t.fail(err)
@@ -247,8 +238,101 @@ test('When fastify.pg root namespace is used:', (t) => {
       fastify.pg.transact((client) => client.query('SELECT NOW()'))
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, `database "${BAD_DB_NAME}" does not exist`)
+          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
         })
+    })
+  })
+
+  t.test('Should trigger a rollback when it is impossible to begin transaction', (t) => {
+    t.plan(4)
+
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    class FakeClient extends pg.Client {
+      query (cmd, cb) {
+        if (cmd === 'BEGIN') {
+          cb(new Error('Boom'))
+        }
+        cb(null, {})
+      }
+    }
+    class FakePool extends pg.Pool {
+      constructor (options) {
+        super()
+        this.Client = new FakeClient(options)
+        this.options = Object.assign({}, options)
+      }
+
+      connect (cb) {
+        cb(null, this.Client, () => {})
+      }
+    }
+
+    fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
+
+    fastify.ready((err) => {
+      t.error(err)
+
+      fastify.pg.transact(
+        (client) => {},
+        function (err, result) {
+          t.ok(err)
+          t.equal(err.message, 'Boom')
+          t.equal(result, undefined)
+        }
+      )
+    })
+  })
+
+  t.test('Should trigger a rollback when it is impossible to commit transaction', (t) => {
+    t.plan(3)
+
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    class FakeClient extends pg.Client {
+      query (queryText, values, cb) {
+        if (values && typeof values === 'function') {
+          cb = values
+        }
+        if (queryText === 'COMMIT') {
+          return cb(new Error('Boom'))
+        }
+        return cb(null, {})
+      }
+    }
+    class FakePool extends pg.Pool {
+      constructor (options) {
+        super()
+        this.Client = new FakeClient(options)
+        this.options = Object.assign({}, options)
+      }
+
+      connect (cb) {
+        cb(null, this.Client, () => {})
+      }
+    }
+
+    fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
+
+    fastify.ready((err) => {
+      t.error(err)
+
+      fastify.pg.transact(
+        (client, commit) => {
+          return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+            'root-rollback-commit'
+          ], (err, res) => {
+            commit(err, res)
+          })
+        }
+      ).then((result) => {
+        t.equal(result, undefined)
+      }).catch(err => {
+        t.ok(err)
+        t.equal(err.message, 'Boom')
+      })
     })
   })
 
@@ -277,14 +361,14 @@ test('When fastify.pg.test namespace is used:', (t) => {
           ]),
         function (err, result) {
           t.error(err)
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg.test
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'namespace-with-callback')
+              t.equal(result.rows[0].username, 'namespace-with-callback')
             })
             .catch((err) => {
               t.fail(err)
@@ -315,14 +399,14 @@ test('When fastify.pg.test namespace is used:', (t) => {
           ])
         )
         .then((result) => {
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg.test
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'namespace-with-promise')
+              t.equal(result.rows[0].username, 'namespace-with-promise')
             })
             .catch((err) => {
               t.fail(err)
@@ -360,14 +444,14 @@ test('When fastify.pg.test namespace is used:', (t) => {
         },
         function (err, result) {
           t.error(err)
-          t.is(result.rows.length, 1)
+          t.equal(result.rows.length, 1)
 
           const userId = result.rows[0].id
 
           fastify.pg.test
             .query('SELECT * FROM users WHERE id = $1', [userId])
             .then((result) => {
-              t.is(result.rows[0].username, 'namespace-commit-callback')
+              t.equal(result.rows[0].username, 'namespace-commit-callback')
             })
             .catch((err) => {
               t.fail(err)
@@ -406,7 +490,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
                 .query('SELECT * FROM users WHERE id = $1', [userId])
                 .then((result) => {
                   t.ok(result)
-                  t.is(result.rows[0].username, 'namespace-rollback-user-callback')
+                  t.equal(result.rows[0].username, 'namespace-rollback-user-callback')
                 })
                 .then(() => {
                   throw new Error('We make it throw on purpose to trigger a rollback')
@@ -415,14 +499,14 @@ test('When fastify.pg.test namespace is used:', (t) => {
         },
         function (err, result) {
           t.ok(err)
-          t.is(err.message, 'We make it throw on purpose to trigger a rollback')
-          t.is(result, undefined)
+          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
+          t.equal(result, undefined)
 
           fastify.pg.test
             .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-callback\'')
             .then((result) => {
               t.ok(result)
-              t.is(result.rows.length, 0)
+              t.equal(result.rows.length, 0)
             })
             .catch((err) => {
               t.fail(err)
@@ -461,7 +545,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
                 .query('SELECT * FROM users WHERE id = $1', [userId])
                 .then((result) => {
                   t.ok(result)
-                  t.is(result.rows[0].username, 'namespace-rollback-user-promise')
+                  t.equal(result.rows[0].username, 'namespace-rollback-user-promise')
                 })
                 .then(() => {
                   throw new Error('We make it throw on purpose to trigger a rollback')
@@ -470,13 +554,13 @@ test('When fastify.pg.test namespace is used:', (t) => {
         )
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, 'We make it throw on purpose to trigger a rollback')
+          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
 
           fastify.pg.test
             .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-promise\'')
             .then((result) => {
               t.ok(result)
-              t.is(result.rows.length, 0)
+              t.equal(result.rows.length, 0)
             })
             .catch((err) => {
               t.fail(err)
@@ -501,7 +585,7 @@ test('When fastify.pg.test namespace is used:', (t) => {
       fastify.pg.test.transact((client) => client.query('SELECT NOW()'))
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, `database "${BAD_DB_NAME}" does not exist`)
+          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
         })
     })
   })
