@@ -99,9 +99,9 @@ test('When fastify.pg root namespace is used:', (t) => {
         t.error(err)
 
         fastify.pg.query('SELECT NOW()', (err, result) => {
-          t.is(result, undefined)
+          t.equal(result, undefined)
           t.ok(err)
-          t.is(err.message, `database "${BAD_DB_NAME}" does not exist`)
+          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
         })
       })
     }
@@ -127,7 +127,7 @@ test('When fastify.pg root namespace is used:', (t) => {
         })
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, `database "${BAD_DB_NAME}" does not exist`)
+          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
         })
     })
   })
@@ -225,7 +225,7 @@ test('When fastify.pg custom namespace is used:', (t) => {
       fastify.pg.test
         .query('SELECT 1 AS one')
         .then((result) => {
-          t.is(result.rows[0].one, 1)
+          t.equal(result.rows[0].one, 1)
         })
         .catch((err) => {
           t.fail(err)
@@ -254,7 +254,7 @@ test('When fastify.pg custom namespace is used:', (t) => {
         })
         .catch((err) => {
           t.ok(err)
-          t.is(err.message, `database "${BAD_DB_NAME}" does not exist`)
+          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
         })
     })
   })
