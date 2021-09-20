@@ -102,19 +102,21 @@ function fastifyPostgres (fastify, options, next) {
     if (db[name]) {
       return next(new Error(`fastify-postgres '${name}' is a reserved keyword`))
     } else if (!fastify.pg) {
-      fastify.decorate('pg', {})
+      fastify.decorate('pg', Object.create(null))
     } else if (fastify.pg[name]) {
       return next(new Error(`fastify-postgres '${name}' instance name has already been registered`))
     }
 
     fastify.pg[name] = db
   } else {
-    if (!fastify.pg) {
-      fastify.decorate('pg', db)
-    } else if (fastify.pg.pool) {
-      return next(new Error('fastify-postgres has already been registered'))
-    } else {
+    if (fastify.pg) {
+      if (fastify.pg.pool) {
+        return next(new Error('fastify-postgres has already been registered'))
+      }
+
       Object.assign(fastify.pg, db)
+    } else {
+      fastify.decorate('pg', db)
     }
   }
 
@@ -125,13 +127,11 @@ function fastifyPostgres (fastify, options, next) {
   fastify.addHook('onRoute', routeOptions => {
     const transact = routeOptions && routeOptions.pg && routeOptions.pg.transact
 
-    if (!transact) {
-      return
-    }
-    if (typeof transact === 'string' && transact !== name) {
-      return
-    }
-    if (name && transact === true) {
+    if (
+      !transact ||
+      (typeof transact === 'string' && transact !== name) ||
+      (name && transact === true)
+    ) {
       return
     }
 
@@ -140,7 +140,7 @@ function fastifyPostgres (fastify, options, next) {
 
       if (name) {
         if (!req.pg) {
-          req.pg = {}
+          req.pg = Object.create(null)
         }
 
         if (client[name]) {
