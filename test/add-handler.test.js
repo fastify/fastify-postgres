@@ -1,11 +1,10 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const { test } = require('tap')
 const addHandler = require('../lib/add-handler')
 
-test('addHandler - ', t => {
-  test('when existing handler is not defined', t => {
+test('The addHandler lib should return the right handlers structure', t => {
+  t.test('When the existingHandler argument is undefined', t => {
     t.plan(1)
 
     const handlers = addHandler(
@@ -15,7 +14,8 @@ test('addHandler - ', t => {
 
     t.same(handlers, ['test'])
   })
-  test('when existing handler is a array', t => {
+
+  t.test('When the existingHandler argument is an array', t => {
     t.plan(1)
 
     const handlers = addHandler(
@@ -25,7 +25,8 @@ test('addHandler - ', t => {
 
     t.same(handlers, ['test', 'again'])
   })
-  test('when existing handler is a function', t => {
+
+  t.test('When the existingHandler argument is a function', t => {
     t.plan(2)
 
     const stub = () => 'test'
