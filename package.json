@@ -36,15 +36,15 @@
     "fastify-plugin": "^3.0.0"
   },
   "devDependencies": {
-    "@tsconfig/node10": "^1.0.7",
-    "@types/pg": "^8.6.0",
-    "fastify": "^3.0.0",
-    "pg": "^8.2.1",
+    "@tsconfig/node10": "^1.0.8",
+    "@types/pg": "^8.6.1",
+    "fastify": "^3.21.3",
+    "pg": "^8.7.1",
     "pg-native": "^3.0.0",
-    "standard": "^16.0.0",
-    "tap": "^15.0.2",
+    "standard": "^16.0.3",
+    "tap": "^15.0.9",
     "tsd": "^0.17.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.4.3"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
