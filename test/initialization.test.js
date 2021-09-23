@@ -247,37 +247,35 @@ test('fastify.pg custom namespace should exist if a name is set', (t) => {
   })
 })
 
-test('fastify.pg and a fastify.pg custom namespace should exist when registering a named instance before an unnamed instance)', (t) => {
-  t.plan(11)
+test('fastify.pg and a fastify.pg custom namespace should exist when registering a named instance before an unnamed instance)', async (t) => {
+  t.plan(10)
 
   const fastify = Fastify()
   t.teardown(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString,
     name: 'one'
   })
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString
   })
 
-  fastify.ready(async (err) => {
-    t.error(err)
+  await fastify.ready().catch(err => t.error(err))
 
-    t.ok(fastify.pg)
-    t.ok(fastify.pg.connect)
-    t.ok(fastify.pg.pool)
-    t.ok(fastify.pg.Client)
+  t.ok(fastify.pg)
+  t.ok(fastify.pg.connect)
+  t.ok(fastify.pg.pool)
+  t.ok(fastify.pg.Client)
 
-    t.ok(fastify.pg.one)
-    t.ok(fastify.pg.one.connect)
-    t.ok(fastify.pg.one.pool)
-    t.ok(fastify.pg.one.Client)
+  t.ok(fastify.pg.one)
+  t.ok(fastify.pg.one.connect)
+  t.ok(fastify.pg.one.pool)
+  t.ok(fastify.pg.one.Client)
 
-    const result = await fastify.pg.query('SELECT NOW()')
-    const resultOne = await fastify.pg.one.query('SELECT NOW()')
-    t.same(result.rowCount, 1)
-    t.same(resultOne.rowCount, 1)
-  })
+  const result = await fastify.pg.query('SELECT NOW()')
+  const resultOne = await fastify.pg.one.query('SELECT NOW()')
+  t.same(result.rowCount, 1)
+  t.same(resultOne.rowCount, 1)
 })
