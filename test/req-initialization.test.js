@@ -93,7 +93,7 @@ test('When we use the fastify-postgres transaction route option', t => {
     fastify.get('/fail', { pg: { transact: true } }, async (req, reply) => {
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
-      // This one should fail (unknown_table does no exists) and trigger a rollback
+      // This one should fail (unknown_table does not exist) and trigger a rollback
       await req.pg.query('INSERT INTO unknown_table(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       reply.send('complete')
     })
@@ -128,7 +128,7 @@ test('When we use the fastify-postgres transaction route option', t => {
     fastify.get('/fail', { pg: { transact: true } }, async (req, reply) => {
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
-      // This one should fail (unknown_table does no exists) and trigger a rollback
+      // This one should fail (unknown_table does not exist) and trigger a rollback
       await req.pg.test.query('INSERT INTO unknown_table(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       reply.send('complete')
     })
