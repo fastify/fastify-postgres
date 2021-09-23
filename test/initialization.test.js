@@ -1,7 +1,6 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const { test } = require('tap')
 const Fastify = require('fastify')
 const pg = require('pg')
 const fastifyPostgres = require('../index')
@@ -246,4 +245,37 @@ test('fastify.pg custom namespace should exist if a name is set', (t) => {
     t.ok(fastify.pg.test.pool)
     t.ok(fastify.pg.test.Client)
   })
+})
+
+test('fastify.pg and a fastify.pg custom namespace should exist when registering a named instance before an unnamed instance)', async (t) => {
+  t.plan(10)
+
+  const fastify = Fastify()
+  t.teardown(() => fastify.close())
+
+  await fastify.register(fastifyPostgres, {
+    connectionString,
+    name: 'one'
+  })
+
+  await fastify.register(fastifyPostgres, {
+    connectionString
+  })
+
+  await fastify.ready().catch(err => t.error(err))
+
+  t.ok(fastify.pg)
+  t.ok(fastify.pg.connect)
+  t.ok(fastify.pg.pool)
+  t.ok(fastify.pg.Client)
+
+  t.ok(fastify.pg.one)
+  t.ok(fastify.pg.one.connect)
+  t.ok(fastify.pg.one.pool)
+  t.ok(fastify.pg.one.Client)
+
+  const result = await fastify.pg.query('SELECT NOW()')
+  const resultOne = await fastify.pg.one.query('SELECT NOW()')
+  t.same(result.rowCount, 1)
+  t.same(resultOne.rowCount, 1)
 })

@@ -1,15 +1,14 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const { test } = require('tap')
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
 const { connectionString } = require('./helpers')
 
 const extractUserCount = response => parseInt(JSON.parse(response.payload).rows[0].userCount)
 
-test('fastify postgress useTransaction route option', t => {
-  test('queries that succeed provided', async t => {
+test('When we use the fastify-postgres transaction route option', t => {
+  t.test('Should be able to execute queries provided to the request pg decorator', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
@@ -40,7 +39,8 @@ test('fastify postgress useTransaction route option', t => {
 
     t.equal(extractUserCount(response), 2)
   })
-  test('queries that succeed provided to a namespace', async t => {
+
+  t.test('Should be able to execute queries provided to a namespaced request pg decorator', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
@@ -73,7 +73,8 @@ test('fastify postgress useTransaction route option', t => {
 
     t.equal(extractUserCount(response), 2)
   })
-  test('queries that fail provided', async t => {
+
+  t.test('Should trigger a rollback when failing to execute a query provided to the request pg decorator', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
@@ -92,7 +93,43 @@ test('fastify postgress useTransaction route option', t => {
     fastify.get('/fail', { pg: { transact: true } }, async (req, reply) => {
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
-      await req.pg.query('INSERT INTO nope(username) VALUES($1) RETURNING id', ['fail-opt-in'])
+      // This one should fail (unknown_table does not exist) and trigger a rollback
+      await req.pg.query('INSERT INTO unknown_table(username) VALUES($1) RETURNING id', ['fail-opt-in'])
+      reply.send('complete')
+    })
+
+    await fastify.inject({ url: '/fail' })
+
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/count-users'
+    })
+
+    t.equal(extractUserCount(response), 0)
+  })
+
+  t.test('Should trigger a rollback when failing to execute a query provided to a namespaced request pg decorator', async t => {
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, {
+      connectionString,
+      name: 'test'
+    })
+
+    await fastify.pg.test.query('TRUNCATE users')
+
+    fastify.get('/count-users', async (req, reply) => {
+      const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'fail-opt-in\'')
+
+      reply.send(result)
+    })
+
+    fastify.get('/fail', { pg: { transact: true } }, async (req, reply) => {
+      await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
+      await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['fail-opt-in'])
+      // This one should fail (unknown_table does not exist) and trigger a rollback
+      await req.pg.test.query('INSERT INTO unknown_table(username) VALUES($1) RETURNING id', ['fail-opt-in'])
       reply.send('complete')
     })
 
@@ -109,8 +146,8 @@ test('fastify postgress useTransaction route option', t => {
   t.end()
 })
 
-test('combinations of registrationOptions.name and routeOptions.pg.transact that should not add hooks', t => {
-  test('transact not set', t => {
+test('Should not add hooks with combinations of registration `options.name` and route options `pg.transact`', t => {
+  t.test('Should not add hooks when `transact` is not set', t => {
     t.plan(1)
 
     const fastify = Fastify()
@@ -126,7 +163,8 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
 
     fastify.inject({ url: '/' })
   })
-  test('name set and transact not set', t => {
+
+  t.test('Should not add hooks when `name` is set and `transact` is not set', t => {
     t.plan(1)
 
     const fastify = Fastify()
@@ -143,7 +181,8 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
 
     fastify.inject({ url: '/' })
   })
-  test('name set and transact set to true', t => {
+
+  t.test('Should not add hooks when `name` is set and `transact` is set to `true`', t => {
     t.plan(1)
 
     const fastify = Fastify()
@@ -160,7 +199,8 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
 
     fastify.inject({ url: '/' })
   })
-  test('name not set and transact set to string', t => {
+
+  t.test('Should not add hooks when `name` is not set and `transact` is set and is a string', t => {
     t.plan(1)
 
     const fastify = Fastify()
@@ -176,7 +216,8 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
 
     fastify.inject({ url: '/' })
   })
-  test('name and transact set to different strings', t => {
+
+  t.test('Should not add hooks when `name` and `transact` are set to different strings', t => {
     t.plan(1)
 
     const fastify = Fastify()
@@ -193,11 +234,12 @@ test('combinations of registrationOptions.name and routeOptions.pg.transact that
 
     fastify.inject({ url: '/' })
   })
+
   t.end()
 })
 
-test('incorrect combinations of registrationOptions.name and routeOptions.pg.transact should throw errors', t => {
-  t.test('name set as reserved keyword', t => {
+test('Should throw errors with incorrect combinations of registration `options.name` and route options `pg.transact`', t => {
+  t.test('Should throw an error when `name` is set as reserved keyword', t => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -222,7 +264,7 @@ test('incorrect combinations of registrationOptions.name and routeOptions.pg.tra
     })
   })
 
-  t.test('named pg client has already registered', t => {
+  t.test('Should throw an error when pg client has already been registered with the same name', t => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -249,7 +291,7 @@ test('incorrect combinations of registrationOptions.name and routeOptions.pg.tra
     })
   })
 
-  t.test('pg client has already registered', t => {
+  t.test('Should throw an error when pg client has already been registered', t => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -272,5 +314,6 @@ test('incorrect combinations of registrationOptions.name and routeOptions.pg.tra
       })
     })
   })
+
   t.end()
 })
