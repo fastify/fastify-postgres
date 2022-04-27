@@ -1,6 +1,6 @@
 {
-  "name": "fastify-postgres",
-  "version": "3.6.0",
+  "name": "@fastify/postgres",
+  "version": "4.0.0",
   "description": "Fastify PostgreSQL connection plugin",
   "main": "index.js",
   "types": "index.d.ts",
@@ -52,5 +52,8 @@
   },
   "tsd": {
     "directory": "test/types"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
