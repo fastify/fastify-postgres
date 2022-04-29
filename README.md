@@ -1,7 +1,7 @@
-# fastify-postgres
+# @fastify/postgres
 
 ![CI](https://github.com/fastify/fastify-postgres/workflows/CI/badge.svg)
-[![NPM version](https://img.shields.io/npm/v/fastify-postgres.svg?style=flat)](https://www.npmjs.com/package/fastify-postgres)
+[![NPM version](https://img.shields.io/npm/v/@fastify/postgres.svg?style=flat)](https://www.npmjs.com/package/@fastify/postgres)
 [![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-postgres/badge.svg)](https://snyk.io/test/github/fastify/fastify-postgres)
 [![Coverage Status](https://coveralls.io/repos/github/fastify/fastify-postgres/badge.svg?branch=master)](https://coveralls.io/github/fastify/fastify-postgres?branch=master)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
@@ -11,7 +11,7 @@ Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used,
 
 ## Install
 ```
-npm i pg fastify-postgres --save
+npm i pg @fastify/postgres --save
 ```
 ## Usage
 Add it to your project with `register` and you are done!
@@ -28,7 +28,7 @@ Example:
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
 })
 
@@ -58,7 +58,7 @@ Async await is supported as well!
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
 })
 
@@ -80,7 +80,7 @@ Use of `pg.query`
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
 })
 
@@ -103,7 +103,7 @@ Use of `pg.transact`
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres'
 })
 
@@ -156,7 +156,7 @@ You can use both unnamed and named postgres connections at once. There can be on
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres',
   name: 'foo'
 })
@@ -184,7 +184,7 @@ Note: trying to use native options without successfully installation of `pg-nati
 ```js
 const fastify = require('fastify')()
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres',
   native: true
 })
@@ -212,7 +212,7 @@ const fastify = require('fastify')()
 const pg = require("pg");
 require("pg-range").install(pg)
 
-fastify.register(require('fastify-postgres'), {
+fastify.register(require('@fastify/postgres'), {
   connectionString: 'postgres://postgres@localhost/postgres',
   pg: pg
 })
