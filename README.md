@@ -64,11 +64,16 @@ fastify.register(require('@fastify/postgres'), {
 
 fastify.get('/user/:id', async (req, reply) => {
   const client = await fastify.pg.connect()
-  const { rows } = await client.query(
-    'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
-  )
-  client.release()
-  return rows
+  try {
+    const { rows } = await client.query(
+      'SELECT id, username, hash, salt FROM users WHERE id=$1', [req.params.id],
+    )
+    // Note: avoid doing expensive computation here, this will block releasing the client
+    return rows
+  } finally {
+    // Release the client immediately after query resolves, or upon error
+    client.release()
+  }
 })
 
 fastify.listen(3000, err => {
@@ -233,7 +238,7 @@ fastify.listen(3000, err => {
 ```
 
 ### Transact route option
-It is possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect. 
+It is possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect.
 
 `query` commands can then be accessed at `request.pg` or `request.pg[name]` and `transact` can be set for either the root pg client with value `true` or for a pg client at a particular namespace with value `name`. Note that the namespace needs to be set when registering the plugin in order to be available on the request object.
 
