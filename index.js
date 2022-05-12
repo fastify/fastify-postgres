@@ -90,7 +90,7 @@ function fastifyPostgres (fastify, options, next) {
   const pool = new pg.Pool(options)
   const db = {
     connect: pool.connect.bind(pool),
-    pool: pool,
+    pool,
     Client: pg.Client,
     query: pool.query.bind(pool),
     transact: transact.bind(pool)
