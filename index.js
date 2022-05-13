@@ -189,6 +189,6 @@ function fastifyPostgres (fastify, options, next) {
 }
 
 module.exports = fp(fastifyPostgres, {
-  fastify: '>=1.1.0',
-  name: 'fastify-postgres'
+  fastify: '4.x',
+  name: '@fastify/postgres'
 })

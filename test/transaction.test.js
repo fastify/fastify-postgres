@@ -418,49 +418,6 @@ test('When fastify.pg.test namespace is used:', (t) => {
     })
   })
 
-  t.test('Should be able to use transact util with a commit callback', (t) => {
-    t.plan(4)
-
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
-
-    fastify.register(fastifyPostgres, {
-      connectionString,
-      name: 'test'
-    })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.test.transact(
-        (client, commit) => {
-          client.query(
-            'INSERT INTO users(username) VALUES($1) RETURNING id',
-            ['namespace-commit-callback'],
-            (err, id) => {
-              commit(err, id)
-            }
-          )
-        },
-        function (err, result) {
-          t.error(err)
-          t.equal(result.rows.length, 1)
-
-          const userId = result.rows[0].id
-
-          fastify.pg.test
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'namespace-commit-callback')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
-  })
-
   t.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
     t.plan(9)
 

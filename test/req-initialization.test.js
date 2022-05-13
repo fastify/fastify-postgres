@@ -21,13 +21,13 @@ test('When we use the fastify-postgres transaction route option', t => {
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
 
-      reply.send(result)
+      return result
     })
 
     fastify.get('/pass', { pg: { transact: true } }, async (req, reply) => {
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
-      reply.send('complete')
+      return 'complete'
     })
 
     await fastify.inject({ url: '/pass' })
@@ -54,14 +54,14 @@ test('When we use the fastify-postgres transaction route option', t => {
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
 
-      reply.send(result)
+      return result
     })
 
     fastify.get('/pass', { pg: { transact: 'test' } }, async (req, reply) => {
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
 
-      reply.send('complete')
+      return 'complete'
     })
 
     await fastify.inject({ url: '/pass' })
@@ -155,12 +155,11 @@ test('Should not add hooks with combinations of registration `options.name` and 
 
     fastify.register(fastifyPostgres, {
       connectionString
+    }).after(() => {
+      fastify.get('/', (req, reply) => {
+        t.equal(req.pg, null)
+      })
     })
-
-    fastify.get('/', (req, reply) => {
-      t.equal(req.pg, null)
-    })
-
     fastify.inject({ url: '/' })
   })
 
@@ -173,10 +172,10 @@ test('Should not add hooks with combinations of registration `options.name` and 
     fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    })
-
-    fastify.get('/', (req, reply) => {
-      t.equal(req.pg, null)
+    }).after(() => {
+      fastify.get('/', (req, reply) => {
+        t.equal(req.pg, null)
+      })
     })
 
     fastify.inject({ url: '/' })
@@ -191,10 +190,10 @@ test('Should not add hooks with combinations of registration `options.name` and 
     fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    })
-
-    fastify.get('/', { pg: { transact: true } }, (req, reply) => {
-      t.equal(req.pg, null)
+    }).after(() => {
+      fastify.get('/', { pg: { transact: true } }, (req, reply) => {
+        t.equal(req.pg, null)
+      })
     })
 
     fastify.inject({ url: '/' })
@@ -208,10 +207,10 @@ test('Should not add hooks with combinations of registration `options.name` and 
 
     fastify.register(fastifyPostgres, {
       connectionString
-    })
-
-    fastify.get('/', { pg: { transact: 'test' } }, (req, reply) => {
-      t.equal(req.pg, null)
+    }).after(() => {
+      fastify.get('/', { pg: { transact: 'test' } }, (req, reply) => {
+        t.equal(req.pg, null)
+      })
     })
 
     fastify.inject({ url: '/' })
@@ -226,10 +225,10 @@ test('Should not add hooks with combinations of registration `options.name` and 
     fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    })
-
-    fastify.get('/', { pg: { transact: 'different' } }, (req, reply) => {
-      t.equal(req.pg, null)
+    }).after(() => {
+      fastify.get('/', { pg: { transact: 'different' } }, (req, reply) => {
+        t.equal(req.pg, null)
+      })
     })
 
     fastify.inject({ url: '/' })
@@ -239,40 +238,34 @@ test('Should not add hooks with combinations of registration `options.name` and 
 })
 
 test('Should throw errors with incorrect combinations of registration `options.name` and route options `pg.transact`', t => {
-  t.test('Should throw an error when `name` is set as reserved keyword', t => {
-    t.plan(2)
-
+  t.test('Should throw an error when `name` is set as reserved keyword', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
     const name = 'user'
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name
     })
 
     fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
 
-    fastify.inject({ url: '/' }, (err, response) => {
-      t.error(err)
-      t.same(response.json(), {
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: `request client '${name}' does not exist`
-      })
+    const response = await fastify.inject({ url: '/' })
+    t.same(response.json(), {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: `request client '${name}' does not exist`
     })
   })
 
-  t.test('Should throw an error when pg client has already been registered with the same name', t => {
-    t.plan(2)
-
+  t.test('Should throw an error when pg client has already been registered with the same name', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
     const name = 'test'
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name
     })
@@ -281,23 +274,19 @@ test('Should throw errors with incorrect combinations of registration `options.n
     })
     fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
 
-    fastify.inject({ url: '/' }, (err, response) => {
-      t.error(err)
-      t.same(response.json(), {
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: `request client '${name}' has already been registered`
-      })
+    const response = await fastify.inject({ url: '/' })
+    t.same(response.json(), {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: `request client '${name}' has already been registered`
     })
   })
 
-  t.test('Should throw an error when pg client has already been registered', t => {
-    t.plan(2)
-
+  t.test('Should throw an error when pg client has already been registered', async t => {
     const fastify = Fastify()
     t.teardown(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
     })
     fastify.addHook('onRequest', async (req, reply) => {
@@ -305,13 +294,11 @@ test('Should throw errors with incorrect combinations of registration `options.n
     })
     fastify.get('/', { pg: { transact: true } }, (req, reply) => {})
 
-    fastify.inject({ url: '/' }, (err, response) => {
-      t.error(err)
-      t.same(response.json(), {
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: 'request client has already been registered'
-      })
+    const response = await fastify.inject({ url: '/' })
+    t.same(response.json(), {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: 'request client has already been registered'
     })
   })
 
