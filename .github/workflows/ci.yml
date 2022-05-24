@@ -1,22 +1,38 @@
 name: CI
-'on':
+
+on:
   push:
     paths-ignore:
-      - docs/**
+      - 'docs/**'
       - '*.md'
   pull_request:
     paths-ignore:
-      - docs/**
+      - 'docs/**'
       - '*.md'
+
 jobs:
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v1
+
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
-        node-version:
-          - 14
-          - 16
-          - 18
+        node-version: [14, 16, 18]
     services:
       postgres:
         image: postgres:11-alpine
@@ -30,14 +46,19 @@ jobs:
           --health-cmd pg_isready --health-interval 10s --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
+      - name: Check out repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install Dependencies
-        run: |
-          npm install
+
+      - name: Install dependencies
+        run: npm i
+
       - name: CI environment setup
         run: >
           npm i node-gyp 
@@ -50,34 +71,23 @@ jobs:
           job.services.postgres.ports[5432] }} -d postgres -c 'CREATE TABLE
           users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U
           postgres
-      - name: Check licenses
-        run: |
-          npm run license-checker --if-present
+
       - name: Run tests
         run: |
           npm run test:ci
-      - name: Coveralls Parallel
-        uses: coverallsapp/github-action@1.1.3
-        with:
-          github-token: ${{ secrets.github_token }}
-          parallel: true
-          flag-name: run-${{ matrix.node-version }}-${{ matrix.os }}
-  coverage:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@1.1.3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
+
   automerge:
+    name: Automerge Dependabot PRs
+    if: >
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.user.login == 'dependabot[bot]'
     needs: test
-    runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: write
+    runs-on: ubuntu-latest
     steps:
       - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          target: major
