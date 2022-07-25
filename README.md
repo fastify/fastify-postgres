@@ -9,7 +9,7 @@ Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used,
 
 ## Install
 ```
-npm i pg @fastify/postgres --save
+npm i pg @fastify/postgres
 ```
 ## Usage
 Add it to your project with `register` and you are done!
@@ -267,7 +267,7 @@ In the plugin this works by using the `preHandler` hook to open the transaction,
 Install the compiler and typings for pg module:
 
 ```shell script
-npm install --save-dev typescript @types/pg
+npm i -D typescript @types/pg
 ```
 
 More examples in the [examples/typescript](./examples/typescript) directory.
