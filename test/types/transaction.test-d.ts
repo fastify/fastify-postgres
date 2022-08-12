@@ -66,7 +66,7 @@ app.post("/transact-route", { pg: { transact: true } }, async (req, _reply) => {
 });
 
 app.post(
-  "/transact-route",
+  "/transact-route-alternate",
   { pg: { transact: "primary" } },
   async (req, _reply) => {
     const insertQuery = `

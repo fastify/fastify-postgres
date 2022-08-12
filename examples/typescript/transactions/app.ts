@@ -1,14 +1,14 @@
-import fastify from 'fastify';
+import fastify from "fastify";
 
-import { fastifyPostgres } from '../../../index';
+import { fastifyPostgres } from "../../../index";
 
 const app = fastify();
 
 app.register(fastifyPostgres, {
-  connectionString: 'postgres://user:password@host:port/db',
+  connectionString: "postgres://user:password@host:port/db",
 });
 
-app.post('/init-async', async () => {
+app.post("/init-async", async () => {
   const createTableQuery = `
     CREATE TABLE routes (
       id bigserial primary key,
@@ -24,7 +24,7 @@ app.post('/init-async', async () => {
   });
 });
 
-app.post('/init-cb', (_req, reply) => {
+app.post("/init-cb", (_req, reply) => {
   const createTableQuery = `
     CREATE TABLE routes (
       id bigserial primary key,
@@ -47,5 +47,33 @@ app.post('/init-cb', (_req, reply) => {
     }
   );
 });
+
+app.post("/transact-route", { pg: { transact: true } }, async (req, _reply) => {
+  const createTableQuery = `
+    CREATE TABLE routes (
+      id bigserial primary key,
+      name varchar(80) NOT NULL,
+      created_at timestamp default NULL
+    );
+  `;
+
+  return req.pg?.query(createTableQuery);
+});
+
+app.post(
+  "/transact-route-alternate",
+  { pg: { transact: "primary" } },
+  async (req, _reply) => {
+    const createTableQuery = `
+    CREATE TABLE routes (
+      id bigserial primary key,
+      name varchar(80) NOT NULL,
+      created_at timestamp default NULL
+    );
+  `;
+
+    return req.pg?.query(createTableQuery);
+  }
+);
 
 export { app };
