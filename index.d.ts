@@ -1,5 +1,5 @@
-import { FastifyPluginCallback } from 'fastify';
-import * as Pg from 'pg';
+import { FastifyPluginCallback } from "fastify";
+import * as Pg from "pg";
 
 declare function transact<TResult>(
   fn: (client: Pg.PoolClient) => Promise<TResult>
@@ -13,9 +13,13 @@ declare function transact<TResult>(
 type PostgresDb = {
   pool: Pg.Pool;
   Client: Pg.Client;
-  query: Pg.Pool['query'];
-  connect: Pg.Pool['connect'];
+  query: Pg.Pool["query"];
+  connect: Pg.Pool["connect"];
   transact: typeof transact;
+};
+
+type FastifyPostgresRouteOptions = {
+  transact: boolean;
 };
 
 type PostgresPluginOptions = {
@@ -37,9 +41,16 @@ type PostgresPluginOptions = {
 
 declare const fastifyPostgres: FastifyPluginCallback<PostgresPluginOptions>;
 
-declare module 'fastify' {
+declare module "fastify" {
   export interface FastifyInstance {
     pg: PostgresDb & Record<string, PostgresDb>;
+  }
+
+  export interface FastifyRequest {
+    pg?: Pg.PoolClient;
+  }
+  export interface RouteShorthandOptions {
+    pg?: FastifyPostgresRouteOptions;
   }
 }
 
