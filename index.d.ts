@@ -19,7 +19,7 @@ type PostgresDb = {
 };
 
 type FastifyPostgresRouteOptions = {
-  transact: boolean;
+  transact: boolean | string;
 };
 
 type PostgresPluginOptions = {
