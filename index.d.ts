@@ -18,6 +18,10 @@ type PostgresDb = {
   transact: typeof transact;
 };
 
+type FastifyPostgresRouteOptions = {
+  transact: boolean | string;
+};
+
 type PostgresPluginOptions = {
   /**
    * Custom pg
@@ -40,6 +44,14 @@ declare const fastifyPostgres: FastifyPluginCallback<PostgresPluginOptions>;
 declare module 'fastify' {
   export interface FastifyInstance {
     pg: PostgresDb & Record<string, PostgresDb>;
+  }
+
+  export interface FastifyRequest {
+    pg?: Pg.PoolClient;
+  }
+
+  export interface RouteShorthandOptions {
+    pg?: FastifyPostgresRouteOptions;
   }
 }
 

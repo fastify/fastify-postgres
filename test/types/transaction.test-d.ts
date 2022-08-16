@@ -54,3 +54,27 @@ app.post('/insert-cb', (_req, reply) => {
     }
   );
 });
+
+app.post('/transact-route', { pg: { transact: true } }, async (req, _reply) => {
+  const insertQuery = `
+    INSERT INTO routes(name)
+    VALUES ('ochakovo')
+    RETURNING 1 + 1 as sum;
+  `;
+
+  return req.pg?.query(insertQuery);
+});
+
+app.post(
+  '/transact-route-alternate',
+  { pg: { transact: 'primary' } },
+  async (req, _reply) => {
+    const insertQuery = `
+    INSERT INTO routes(name)
+    VALUES ('ochakovo')
+    RETURNING 1 + 1 as sum;
+  `;
+
+    return req.pg?.query(insertQuery);
+  }
+);

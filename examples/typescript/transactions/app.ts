@@ -48,4 +48,32 @@ app.post('/init-cb', (_req, reply) => {
   );
 });
 
+app.post('/transact-route', { pg: { transact: true } }, async (req, _reply) => {
+  const createTableQuery = `
+    CREATE TABLE routes (
+      id bigserial primary key,
+      name varchar(80) NOT NULL,
+      created_at timestamp default NULL
+    );
+  `;
+
+  return req.pg?.query(createTableQuery);
+});
+
+app.post(
+  '/transact-route-alternate',
+  { pg: { transact: 'primary' } },
+  async (req, _reply) => {
+    const createTableQuery = `
+    CREATE TABLE routes (
+      id bigserial primary key,
+      name varchar(80) NOT NULL,
+      created_at timestamp default NULL
+    );
+  `;
+
+    return req.pg?.query(createTableQuery);
+  }
+);
+
 export { app };
