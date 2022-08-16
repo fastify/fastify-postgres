@@ -49,6 +49,7 @@ declare module 'fastify' {
   export interface FastifyRequest {
     pg?: Pg.PoolClient;
   }
+
   export interface RouteShorthandOptions {
     pg?: FastifyPostgresRouteOptions;
   }
