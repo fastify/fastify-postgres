@@ -1,16 +1,16 @@
-import fastify from "fastify";
-import { PoolClient, QueryResult } from "pg";
-import { expectType } from "tsd";
+import fastify from 'fastify';
+import { PoolClient, QueryResult } from 'pg';
+import { expectType } from 'tsd';
 
-import fastifyPostgres, { PostgresDb } from "../../index";
+import fastifyPostgres, { PostgresDb } from '../../index';
 
 const app = fastify();
 
 app.register(fastifyPostgres, {
-  connectionString: "postgres://user:password@host:port/db",
+  connectionString: 'postgres://user:password@host:port/db',
 });
 
-app.post("/insert-async", async () => {
+app.post('/insert-async', async () => {
   const insertQuery = `
     INSERT INTO routes(name)
     VALUES ('ochakovo')
@@ -28,7 +28,7 @@ app.post("/insert-async", async () => {
   return transactionResult;
 });
 
-app.post("/insert-cb", (_req, reply) => {
+app.post('/insert-cb', (_req, reply) => {
   const insertQuery = `
     INSERT INTO routes(name)
     VALUES ('ochakovo')
@@ -55,7 +55,7 @@ app.post("/insert-cb", (_req, reply) => {
   );
 });
 
-app.post("/transact-route", { pg: { transact: true } }, async (req, _reply) => {
+app.post('/transact-route', { pg: { transact: true } }, async (req, _reply) => {
   const insertQuery = `
     INSERT INTO routes(name)
     VALUES ('ochakovo')
@@ -66,8 +66,8 @@ app.post("/transact-route", { pg: { transact: true } }, async (req, _reply) => {
 });
 
 app.post(
-  "/transact-route-alternate",
-  { pg: { transact: "primary" } },
+  '/transact-route-alternate',
+  { pg: { transact: 'primary' } },
   async (req, _reply) => {
     const insertQuery = `
     INSERT INTO routes(name)
