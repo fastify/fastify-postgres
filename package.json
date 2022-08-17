@@ -6,11 +6,12 @@
   "types": "index.d.ts",
   "scripts": {
     "check-examples": "tsc --build examples/typescript/*",
+    "lint": "standard",
     "lint:fix": "standard --fix",
     "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres",
     "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
-    "test": "standard && tap -J test/*.test.js && npm run test:typescript",
-    "test:ci": "standard && tap -J test/*.test.js --coverage-report=lcovonly && npm run test:typescript",
+    "test": "npm run test:unit && npm run test:typescript",
+    "test:unit": "tap -J test/*.test.js",
     "test:report": "standard && tap -J --coverage-report=html test/*.test.js",
     "test:typescript": "tsd",
     "test:verbose": "standard && tap -J test/*.test.js -Rspec"
