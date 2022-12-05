@@ -192,3 +192,5 @@ module.exports = fp(fastifyPostgres, {
   fastify: '4.x',
   name: '@fastify/postgres'
 })
+module.exports.default = fastifyPostgres
+module.exports.fastifyPostgres = fastifyPostgres
