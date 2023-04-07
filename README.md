@@ -297,7 +297,7 @@ $ npm test
 
 ### Custom Postgres approach
 
-1. Set up a database of your choice oin a postgres server of your choice
+1. Set up a database of your choice in a postgres server of your choice
 2. Create the required table using
     ```sql
     CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);
