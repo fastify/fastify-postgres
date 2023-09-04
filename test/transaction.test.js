@@ -13,7 +13,7 @@ const {
 
 test('When fastify.pg root namespace is used:', (t) => {
   t.test('Should be able to use transact util with a callback', (t) => {
-    t.plan(3)
+    t.plan(4)
 
     const fastify = Fastify()
     t.teardown(() => fastify.close())
