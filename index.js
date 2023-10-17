@@ -171,6 +171,9 @@ function fastifyPostgres (fastify, options, next) {
 
     const onSend = async (req) => {
       const requestClient = extractRequestClient(req, transact)
+      if (!requestClient) {
+        return
+      }
       try {
         if (!req[transactionFailedSymbol]) {
           await requestClient.query('COMMIT')
