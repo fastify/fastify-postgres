@@ -16,7 +16,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       connectionString
     })
 
-    await fastify.pg.query('TRUNCATE users')
+    await fastify.pg.query('DELETE FROM "users" WHERE TRUE')
 
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
@@ -49,7 +49,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       name: 'test'
     })
 
-    await fastify.pg.test.query('TRUNCATE users')
+    await fastify.pg.test.query('DELETE FROM "users" WHERE TRUE')
 
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
@@ -82,7 +82,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       connectionString
     })
 
-    await fastify.pg.query('TRUNCATE users')
+    await fastify.pg.query('DELETE FROM "users" WHERE TRUE')
 
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'fail-opt-in\'')
@@ -117,7 +117,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       name: 'test'
     })
 
-    await fastify.pg.test.query('TRUNCATE users')
+    await fastify.pg.test.query('DELETE FROM "users" WHERE TRUE')
 
     fastify.get('/count-users', async (req, reply) => {
       const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'fail-opt-in\'')
