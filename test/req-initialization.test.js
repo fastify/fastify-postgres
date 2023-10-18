@@ -163,8 +163,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       },
       pg: { transact: true }
     }, async (req, reply) => {
-      await req.pg.query('THIS QUERY SHOULD NOT BE EXECUTED', [])
-      return 'never success'
+      t.fail('should never execute the handler')
     })
 
     const response = await fastify.inject({
