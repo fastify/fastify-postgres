@@ -161,7 +161,7 @@ function fastifyPostgres (fastify, options, next) {
         }
       }
 
-      client.query('BEGIN')
+      await client.query('BEGIN')
     }
 
     const onError = (req, reply, error, done) => {
