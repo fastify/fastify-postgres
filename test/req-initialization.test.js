@@ -143,6 +143,38 @@ test('When we use the fastify-postgres transaction route option', t => {
     t.equal(extractUserCount(response), 0)
   })
 
+  t.test('Should work properly with `schema` option and validation failure', async t => {
+    const fastify = Fastify()
+    t.teardown(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, {
+      connectionString
+    })
+
+    fastify.post('/schema-validation', {
+      schema: {
+        body: {
+          type: 'object',
+          properties: {
+            hello: { type: 'string' }
+          },
+          required: ['hello']
+        }
+      },
+      pg: { transact: true }
+    }, async (req, reply) => {
+      t.fail('should never execute the handler')
+    })
+
+    const response = await fastify.inject({
+      url: '/schema-validation',
+      method: 'POST',
+      body: { notValid: 'json input' }
+    })
+    t.not(response.body, 'never success')
+    t.equal(response.json().code, 'FST_ERR_VALIDATION')
+  })
+
   t.end()
 })
 
