@@ -12,10 +12,10 @@
     "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres",
     "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
     "test": "npm run test:unit && npm run test:typescript",
-    "test:unit": "tap -J test/*.test.js",
-    "test:report": "standard && tap -J --coverage-report=html test/*.test.js",
+    "test:unit": "tap test/*.test.js",
+    "test:report": "standard && tap --coverage-report=html test/*.test.js",
     "test:typescript": "tsd",
-    "test:verbose": "standard && tap -J test/*.test.js -Rspec"
+    "test:verbose": "standard && tap test/*.test.js -Rspec"
   },
   "repository": {
     "type": "git",
@@ -36,18 +36,18 @@
   },
   "homepage": "https://github.com/fastify/fastify-postgres#readme",
   "dependencies": {
-    "fastify-plugin": "^4.0.0"
+    "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
-    "@tsconfig/node10": "^1.0.8",
-    "@types/pg": "^8.6.1",
-    "fastify": "^4.0.0-rc.2",
-    "pg": "^8.7.1",
-    "pg-native": "^3.0.0",
-    "standard": "^17.0.0",
-    "tap": "^16.0.0",
-    "tsd": "^0.31.0",
-    "typescript": "^5.0.2"
+    "@tsconfig/node10": "^1.0.9",
+    "@types/pg": "^8.11.4",
+    "fastify": "^4.26.2",
+    "pg": "^8.11.3",
+    "pg-native": "^3.0.1",
+    "standard": "^17.1.0",
+    "tap": "^18.7.1",
+    "tsd": "^0.30.7",
+    "typescript": "^5.4.3"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
