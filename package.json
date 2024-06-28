@@ -36,12 +36,12 @@
   },
   "homepage": "https://github.com/fastify/fastify-postgres#readme",
   "dependencies": {
-    "fastify-plugin": "^4.5.1"
+    "fastify-plugin": "^5.0.0-pre.fv5.1"
   },
   "devDependencies": {
     "@tsconfig/node10": "^1.0.9",
     "@types/pg": "^8.11.4",
-    "fastify": "^4.26.2",
+    "fastify": "^5.0.0-alpha.3",
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
     "standard": "^17.1.0",
