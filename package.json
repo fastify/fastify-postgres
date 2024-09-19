@@ -41,7 +41,7 @@
   "devDependencies": {
     "@tsconfig/node10": "^1.0.9",
     "@types/pg": "^8.11.4",
-    "fastify": "^5.0.0-alpha.4",
+    "fastify": "^5.0.0",
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
     "standard": "^17.1.0",
