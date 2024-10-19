@@ -47,7 +47,7 @@
     "standard": "^17.1.0",
     "tap": "^18.7.1",
     "tsd": "^0.31.1",
-    "typescript": "^5.4.3"
+    "typescript": "~5.4.3"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
