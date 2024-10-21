@@ -2,7 +2,6 @@
 
 const { test } = require('node:test')
 const Fastify = require('fastify')
-const pg = require('pg')
 const fastifyPostgres = require('../index')
 const { connectionString } = require('./helpers')
 
