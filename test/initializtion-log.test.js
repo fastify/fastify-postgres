@@ -3,7 +3,7 @@ const Fastify = require('fastify')
 const pg = require('pg')
 const { connectionString } = require('./helpers')
 
-// node:tes currently does not support mocking module properties
+// node:test currently does not support mocking module properties to mock pg.native property
 test('Should print warning when native module not installed', (t) => {
   t.plan(3)
 
