@@ -12,7 +12,7 @@
     "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres",
     "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
     "test": "npm run test:unit && npm run test:typescript",
-    "test:unit": "borp --reporter=./test/test-reporter.mjs --coverage --check-coverage",
+    "test:unit": "borp --reporter=./test/test-reporter.mjs --coverage --check-coverage --lines 100",
     "test:report": "standard && c8 --reporter html borp --reporter=./test/test-reporter.mjs",
     "test:typescript": "tsd"
   },
