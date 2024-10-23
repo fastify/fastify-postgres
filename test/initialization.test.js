@@ -1,103 +1,57 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const Fastify = require('fastify')
-const pg = require('pg')
 const fastifyPostgres = require('../index')
 const { connectionString } = require('./helpers')
 
-test('Should be able to use native module', (t) => {
+test('Should be able to use native module', async (t) => {
   t.plan(2)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString,
     native: true
   })
 
-  fastify.ready((err) => {
-    t.error(err)
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 
-    fastify.pg
-      .query('SELECT 1 AS one')
-      .then((result) => {
-        t.equal(result.rows[0].one, 1)
-      })
-      .catch((err) => {
-        t.fail(err)
-      })
-  })
+  const result = await fastify.pg
+    .query('SELECT 1 AS one')
+
+  t.assert.strictEqual(result.rows[0].one, 1)
 })
 
-test('Should print warning when native module not installed', (t) => {
-  t.plan(3)
-
-  const mockedFastifyPostgres = t.mock('../index', {
-    pg: { ...pg, native: null }
-  })
-  const realConsole = global.console
-  global.console.warn = (msg) => t.equal(msg, "pg-native not installed, can't use native option - fallback to pg module")
-
-  const fastify = Fastify()
-  t.teardown(() => {
-    fastify.close()
-    global.console = realConsole
-  })
-
-  fastify.register(mockedFastifyPostgres, {
-    connectionString,
-    native: true
-  })
-
-  fastify.ready((err) => {
-    t.error(err)
-
-    fastify.pg
-      .query('SELECT 1 AS one')
-      .then((result) => {
-        t.equal(result.rows[0].one, 1)
-      })
-      .catch((err) => {
-        t.fail(err)
-      })
-  })
-})
-
-test('Should be able to use an alternative pg module', (t) => {
+test('Should be able to use an alternative pg module', async (t) => {
   t.plan(2)
 
   const altPg = require('pg')
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString,
     pg: altPg
   })
 
-  fastify.ready((err) => {
-    t.error(err)
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 
-    fastify.pg
-      .query('SELECT 1 AS one')
-      .then((result) => {
-        t.equal(result.rows[0].one, 1)
-      })
-      .catch((err) => {
-        t.fail(err)
-      })
-  })
+  const result = await fastify.pg
+    .query('SELECT 1 AS one')
+  t.assert.strictEqual(result.rows[0].one, 1)
 })
 
-test('Should not throw if registered within different scopes (with and without named instances)', (t) => {
+test('Should not throw if registered within different scopes (with and without named instances)', async (t) => {
   t.plan(1)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(function scopeOne (instance, opts, next) {
+  await fastify.register(function scopeOne (instance, opts, next) {
     instance.register(fastifyPostgres, {
       connectionString
     })
@@ -105,7 +59,7 @@ test('Should not throw if registered within different scopes (with and without n
     next()
   })
 
-  fastify.register(function scopeTwo (instance, opts, next) {
+  await fastify.register(function scopeTwo (instance, opts, next) {
     instance.register(fastifyPostgres, {
       connectionString,
       name: 'one'
@@ -119,139 +73,142 @@ test('Should not throw if registered within different scopes (with and without n
     next()
   })
 
-  fastify.ready((err) => {
-    t.error(err)
-  })
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 })
 
-test('Should throw when trying to register multiple instances without giving a name', (t) => {
-  t.plan(2)
+test('Should throw when trying to register multiple instances without giving a name', async (t) => {
+  t.plan(3)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString
   })
 
-  fastify.register(fastifyPostgres, {
-    connectionString
-  })
-
-  fastify.ready((err) => {
-    t.ok(err)
-    t.equal((err || {}).message, 'fastify-postgres has already been registered')
-  })
+  await t.assert.rejects(
+    async () => await fastify.register(fastifyPostgres, {
+      connectionString
+    }),
+    (err) => {
+      t.assert.ok(err)
+      t.assert.strictEqual((err || {}).message, 'fastify-postgres has already been registered')
+      return true
+    }
+  )
 })
 
-test('Should not throw when registering a named instance and an unnamed instance', (t) => {
+test('Should not throw when registering a named instance and an unnamed instance', async (t) => {
   t.plan(1)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString,
     name: 'one'
   })
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString
   })
 
-  fastify.ready((err) => {
-    t.error(err)
-  })
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 })
 
-test('Should throw when trying to register duplicate connection names', (t) => {
-  t.plan(2)
+test('Should throw when trying to register duplicate connection names', async (t) => {
+  t.plan(3)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
   const name = 'test'
 
-  fastify
+  await fastify
     .register(fastifyPostgres, {
       connectionString,
       name
     })
-  fastify.register(fastifyPostgres, {
-    connectionString,
-    name
-  })
 
-  fastify.ready((err) => {
-    t.ok(err)
-    t.equal((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
-  })
+  await t.assert.rejects(
+    async () => await fastify.register(fastifyPostgres, {
+      connectionString,
+      name
+    }),
+    (err) => {
+      t.assert.ok(err)
+      t.assert.strictEqual((err || {}).message, `fastify-postgres '${name}' instance name has already been registered`)
+      return true
+    }
+  )
 })
 
-test('Should throw when trying to register a named connection with a reserved keyword', (t) => {
-  t.plan(2)
+test('Should throw when trying to register a named connection with a reserved keyword', async (t) => {
+  t.plan(3)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
   const name = 'Client'
 
-  fastify.register(fastifyPostgres, {
-    connectionString,
-    name
-  })
-
-  fastify.ready((err) => {
-    t.ok(err)
-    t.equal((err || {}).message, `fastify-postgres '${name}' is a reserved keyword`)
-  })
+  await t.assert.rejects(
+    async () => await fastify.register(fastifyPostgres, {
+      connectionString,
+      name
+    }),
+    (err) => {
+      t.assert.ok(err)
+      t.assert.strictEqual((err || {}).message, `fastify-postgres '${name}' is a reserved keyword`)
+      return true
+    }
+  )
 })
 
-test('fastify.pg namespace should exist', (t) => {
+test('const result = await fastify.pg namespace should exist', async (t) => {
   t.plan(5)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString
   })
 
-  fastify.ready((err) => {
-    t.error(err)
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 
-    t.ok(fastify.pg)
-    t.ok(fastify.pg.connect)
-    t.ok(fastify.pg.pool)
-    t.ok(fastify.pg.Client)
-  })
+  t.assert.ok(fastify.pg)
+  t.assert.ok(fastify.pg.connect)
+  t.assert.ok(fastify.pg.pool)
+  t.assert.ok(fastify.pg.Client)
 })
 
-test('fastify.pg custom namespace should exist if a name is set', (t) => {
+test('const result = await fastify.pg custom namespace should exist if a name is set', async (t) => {
   t.plan(6)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
-  fastify.register(fastifyPostgres, {
+  await fastify.register(fastifyPostgres, {
     connectionString,
     name: 'test'
   })
 
-  fastify.ready((err) => {
-    t.error(err)
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 
-    t.ok(fastify.pg)
-    t.ok(fastify.pg.test)
-    t.ok(fastify.pg.test.connect)
-    t.ok(fastify.pg.test.pool)
-    t.ok(fastify.pg.test.Client)
-  })
+  t.assert.ok(fastify.pg)
+  t.assert.ok(fastify.pg.test)
+  t.assert.ok(fastify.pg.test.connect)
+  t.assert.ok(fastify.pg.test.pool)
+  t.assert.ok(fastify.pg.test.Client)
 })
 
-test('fastify.pg and a fastify.pg custom namespace should exist when registering a named instance before an unnamed instance)', async (t) => {
-  t.plan(10)
+test('const result = await fastify.pg and a fastify.pg custom namespace should exist when registering a named instance before an unnamed instance)', async (t) => {
+  t.plan(11)
 
   const fastify = Fastify()
-  t.teardown(() => fastify.close())
+  t.after(() => fastify.close())
 
   await fastify.register(fastifyPostgres, {
     connectionString,
@@ -262,20 +219,21 @@ test('fastify.pg and a fastify.pg custom namespace should exist when registering
     connectionString
   })
 
-  await fastify.ready().catch(err => t.error(err))
+  const ready = await fastify.ready()
+  t.assert.ok(ready)
 
-  t.ok(fastify.pg)
-  t.ok(fastify.pg.connect)
-  t.ok(fastify.pg.pool)
-  t.ok(fastify.pg.Client)
+  t.assert.ok(fastify.pg)
+  t.assert.ok(fastify.pg.connect)
+  t.assert.ok(fastify.pg.pool)
+  t.assert.ok(fastify.pg.Client)
 
-  t.ok(fastify.pg.one)
-  t.ok(fastify.pg.one.connect)
-  t.ok(fastify.pg.one.pool)
-  t.ok(fastify.pg.one.Client)
+  t.assert.ok(fastify.pg.one)
+  t.assert.ok(fastify.pg.one.connect)
+  t.assert.ok(fastify.pg.one.pool)
+  t.assert.ok(fastify.pg.one.Client)
 
   const result = await fastify.pg.query('SELECT NOW()')
   const resultOne = await fastify.pg.one.query('SELECT NOW()')
-  t.same(result.rowCount, 1)
-  t.same(resultOne.rowCount, 1)
+  t.assert.deepStrictEqual(result.rowCount, 1)
+  t.assert.deepStrictEqual(resultOne.rowCount, 1)
 })

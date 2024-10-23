@@ -1,16 +1,16 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
 const { connectionString } = require('./helpers')
 
 const extractUserCount = response => parseInt(JSON.parse(response.payload).rows[0].userCount)
 
-test('When we use the fastify-postgres transaction route option', t => {
-  t.test('Should be able to execute queries provided to the request pg decorator', async t => {
+test('When we use the fastify-postgres transaction route option', async t => {
+  await t.test('Should be able to execute queries provided to the request pg decorator', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString
@@ -37,12 +37,12 @@ test('When we use the fastify-postgres transaction route option', t => {
       url: '/count-users'
     })
 
-    t.equal(extractUserCount(response), 2)
+    t.assert.strictEqual(extractUserCount(response), 2)
   })
 
-  t.test('Should be able to execute queries provided to a namespaced request pg decorator', async t => {
+  await t.test('Should be able to execute queries provided to a namespaced request pg decorator', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString,
@@ -71,12 +71,12 @@ test('When we use the fastify-postgres transaction route option', t => {
       url: '/count-users'
     })
 
-    t.equal(extractUserCount(response), 2)
+    t.assert.strictEqual(extractUserCount(response), 2)
   })
 
-  t.test('Should trigger a rollback when failing to execute a query provided to the request pg decorator', async t => {
+  await t.test('Should trigger a rollback when failing to execute a query provided to the request pg decorator', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString
@@ -105,12 +105,12 @@ test('When we use the fastify-postgres transaction route option', t => {
       url: '/count-users'
     })
 
-    t.equal(extractUserCount(response), 0)
+    t.assert.strictEqual(extractUserCount(response), 0)
   })
 
-  t.test('Should trigger a rollback when failing to execute a query provided to a namespaced request pg decorator', async t => {
+  await t.test('Should trigger a rollback when failing to execute a query provided to a namespaced request pg decorator', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString,
@@ -140,12 +140,12 @@ test('When we use the fastify-postgres transaction route option', t => {
       url: '/count-users'
     })
 
-    t.equal(extractUserCount(response), 0)
+    t.assert.strictEqual(extractUserCount(response), 0)
   })
 
-  t.test('Should work properly with `schema` option and validation failure', async t => {
+  await t.test('Should work properly with `schema` option and validation failure', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString
@@ -163,7 +163,7 @@ test('When we use the fastify-postgres transaction route option', t => {
       },
       pg: { transact: true }
     }, async (req, reply) => {
-      t.fail('should never execute the handler')
+      t.assert.fail('should never execute the handler')
     })
 
     const response = await fastify.inject({
@@ -171,108 +171,99 @@ test('When we use the fastify-postgres transaction route option', t => {
       method: 'POST',
       body: { notValid: 'json input' }
     })
-    t.not(response.body, 'never success')
-    t.equal(response.json().code, 'FST_ERR_VALIDATION')
+    t.assert.notStrictEqual(response.body, 'never success')
+    t.assert.strictEqual(response.json().code, 'FST_ERR_VALIDATION')
   })
-
-  t.end()
 })
 
-test('Should not add hooks with combinations of registration `options.name` and route options `pg.transact`', t => {
-  t.test('Should not add hooks when `transact` is not set', t => {
+test('Should not add hooks with combinations of registration `options.name` and route options `pg.transact`', async t => {
+  await t.test('Should not add hooks when `transact` is not set', async t => {
     t.plan(1)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
-    }).after(() => {
-      fastify.get('/', (req, reply) => {
-        t.equal(req.pg, null)
-      })
     })
-    fastify.inject({ url: '/' })
+    fastify.get('/', async (req, reply) => {
+      t.assert.strictEqual(req.pg, null)
+    })
+    await fastify.inject({ url: '/' })
   })
 
-  t.test('Should not add hooks when `name` is set and `transact` is not set', t => {
+  await t.test('Should not add hooks when `name` is set and `transact` is not set', async t => {
     t.plan(1)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    }).after(() => {
-      fastify.get('/', (req, reply) => {
-        t.equal(req.pg, null)
-      })
+    })
+    fastify.get('/', async (req, reply) => {
+      t.assert.strictEqual(req.pg, null)
     })
 
-    fastify.inject({ url: '/' })
+    await fastify.inject({ url: '/' })
   })
 
-  t.test('Should not add hooks when `name` is set and `transact` is set to `true`', t => {
+  await t.test('Should not add hooks when `name` is set and `transact` is set to `true`', async t => {
     t.plan(1)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    }).after(() => {
-      fastify.get('/', { pg: { transact: true } }, (req, reply) => {
-        t.equal(req.pg, null)
-      })
+    })
+    fastify.get('/', { pg: { transact: true } }, async (req, reply) => {
+      t.assert.strictEqual(req.pg, null)
     })
 
-    fastify.inject({ url: '/' })
+    await fastify.inject({ url: '/' })
   })
 
-  t.test('Should not add hooks when `name` is not set and `transact` is set and is a string', t => {
+  await t.test('Should not add hooks when `name` is not set and `transact` is set and is a string', async t => {
     t.plan(1)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
-    }).after(() => {
-      fastify.get('/', { pg: { transact: 'test' } }, (req, reply) => {
-        t.equal(req.pg, null)
-      })
+    })
+    fastify.get('/', { pg: { transact: 'test' } }, async (req, reply) => {
+      t.assert.strictEqual(req.pg, null)
     })
 
-    fastify.inject({ url: '/' })
+    await fastify.inject({ url: '/' })
   })
 
-  t.test('Should not add hooks when `name` and `transact` are set to different strings', t => {
+  await t.test('Should not add hooks when `name` and `transact` are set to different strings', async t => {
     t.plan(1)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
-    }).after(() => {
-      fastify.get('/', { pg: { transact: 'different' } }, (req, reply) => {
-        t.equal(req.pg, null)
-      })
+    })
+    fastify.get('/', { pg: { transact: 'different' } }, async (req, reply) => {
+      t.assert.strictEqual(req.pg, null)
     })
 
-    fastify.inject({ url: '/' })
+    await fastify.inject({ url: '/' })
   })
-
-  t.end()
 })
 
-test('Should throw errors with incorrect combinations of registration `options.name` and route options `pg.transact`', t => {
-  t.test('Should throw an error when `name` is set as reserved keyword', async t => {
+test('Should throw errors with incorrect combinations of registration `options.name` and route options `pg.transact`', async t => {
+  await t.test('Should throw an error when `name` is set as reserved keyword', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     const name = 'user'
 
@@ -281,19 +272,19 @@ test('Should throw errors with incorrect combinations of registration `options.n
       name
     })
 
-    fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
+    fastify.get('/', { pg: { transact: name } }, async (req, reply) => {})
 
     const response = await fastify.inject({ url: '/' })
-    t.same(response.json(), {
+    t.assert.deepStrictEqual(response.json(), {
       statusCode: 500,
       error: 'Internal Server Error',
       message: `request client '${name}' does not exist`
     })
   })
 
-  t.test('Should throw an error when pg client has already been registered with the same name', async t => {
+  await t.test('Should throw an error when pg client has already been registered with the same name', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     const name = 'test'
 
@@ -304,19 +295,19 @@ test('Should throw errors with incorrect combinations of registration `options.n
     fastify.addHook('onRequest', async (req, reply) => {
       req.pg = { [name]: await fastify.pg[name].connect() }
     })
-    fastify.get('/', { pg: { transact: name } }, (req, reply) => {})
+    fastify.get('/', { pg: { transact: name } }, async (req, reply) => {})
 
     const response = await fastify.inject({ url: '/' })
-    t.same(response.json(), {
+    t.assert.deepStrictEqual(response.json(), {
       statusCode: 500,
       error: 'Internal Server Error',
       message: `request client '${name}' has already been registered`
     })
   })
 
-  t.test('Should throw an error when pg client has already been registered', async t => {
+  await t.test('Should throw an error when pg client has already been registered', async t => {
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     await fastify.register(fastifyPostgres, {
       connectionString
@@ -324,15 +315,13 @@ test('Should throw errors with incorrect combinations of registration `options.n
     fastify.addHook('onRequest', async (req, reply) => {
       req.pg = await fastify.pg.connect()
     })
-    fastify.get('/', { pg: { transact: true } }, (req, reply) => {})
+    fastify.get('/', { pg: { transact: true } }, async (req, reply) => {})
 
     const response = await fastify.inject({ url: '/' })
-    t.same(response.json(), {
+    t.assert.deepStrictEqual(response.json(), {
       statusCode: 500,
       error: 'Internal Server Error',
       message: 'request client has already been registered'
     })
   })
-
-  t.end()
 })

@@ -1,10 +1,10 @@
 'use strict'
 
-const { test } = require('tap')
+const { test } = require('node:test')
 const addHandler = require('../lib/add-handler')
 
-test('The addHandler lib should return the right handlers structure', t => {
-  t.test('When the existingHandler argument is undefined', t => {
+test('The addHandler lib should return the right handlers structure', async t => {
+  await t.test('When the existingHandler argument is undefined', t => {
     t.plan(1)
 
     const handlers = addHandler(
@@ -12,10 +12,10 @@ test('The addHandler lib should return the right handlers structure', t => {
       'test'
     )
 
-    t.same(handlers, ['test'])
+    t.assert.deepStrictEqual(handlers, ['test'])
   })
 
-  t.test('When the existingHandler argument is an array', t => {
+  await t.test('When the existingHandler argument is an array', t => {
     t.plan(1)
 
     const handlers = addHandler(
@@ -23,10 +23,10 @@ test('The addHandler lib should return the right handlers structure', t => {
       'again'
     )
 
-    t.same(handlers, ['test', 'again'])
+    t.assert.deepStrictEqual(handlers, ['test', 'again'])
   })
 
-  t.test('When the existingHandler argument is a function', t => {
+  await t.test('When the existingHandler argument is a function', t => {
     t.plan(2)
 
     const stub = () => 'test'
@@ -36,9 +36,7 @@ test('The addHandler lib should return the right handlers structure', t => {
       'again'
     )
 
-    t.same(handlers[0](), 'test')
-    t.same(handlers[1], 'again')
+    t.assert.deepStrictEqual(handlers[0](), 'test')
+    t.assert.deepStrictEqual(handlers[1], 'again')
   })
-
-  t.end()
 })

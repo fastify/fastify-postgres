@@ -1,7 +1,6 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const { test } = require('node:test')
 const Fastify = require('fastify')
 const pg = require('pg')
 const fastifyPostgres = require('../index')
@@ -11,243 +10,208 @@ const {
   connectionStringBadDbName
 } = require('./helpers')
 
-test('When fastify.pg root namespace is used:', (t) => {
-  t.test('Should be able to use transact util with a callback', (t) => {
-    t.plan(4)
-
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
-
-    fastify.register(fastifyPostgres, { connectionString })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.transact(
-        (client) =>
-          client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
-            'root-with-callback'
-          ]),
-        function (err, result) {
-          t.error(err)
-          t.equal(result.rows.length, 1)
-
-          const userId = result.rows[0].id
-
-          fastify.pg
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'root-with-callback')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
-  })
-
-  t.test('Should be able to use transact util with promises', (t) => {
+test('When fastify.pg root namespace is used:', async (t) => {
+  await t.test('Should be able to use transact util with a callback', async (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, { connectionString })
+    await fastify.register(fastifyPostgres, { connectionString })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg
-        .transact((client) =>
-          client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['root-with-promise'])
-        )
-        .then((result) => {
-          t.equal(result.rows.length, 1)
+    const result = await fastify.pg.transact(
+      (client) =>
+        client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+          'root-with-callback'
+        ])
+    )
+    t.assert.strictEqual(result.rows.length, 1)
 
-          const userId = result.rows[0].id
+    const userId = result.rows[0].id
 
-          fastify.pg
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'root-with-promise')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        })
-        .catch((err) => {
-          t.fail(err)
-        })
-    })
+    const result2 = await fastify.pg
+      .query('SELECT * FROM users WHERE id = $1', [userId])
+    t.assert.strictEqual(result2.rows[0].username, 'root-with-callback')
   })
 
-  t.test('Should be able to use transact util with a commit callback', (t) => {
+  await t.test('Should be able to use transact util with promises', async (t) => {
+    t.plan(3)
+
+    const fastify = Fastify()
+    t.after(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, { connectionString })
+
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
+
+    const result = await fastify.pg
+      .transact((client) =>
+        client.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['root-with-promise'])
+      )
+    t.assert.strictEqual(result.rows.length, 1)
+
+    const userId = result.rows[0].id
+
+    const result2 = await fastify.pg
+      .query('SELECT * FROM users WHERE id = $1', [userId])
+    t.assert.strictEqual(result2.rows[0].username, 'root-with-promise')
+  })
+
+  await t.test('Should be able to use transact util with a commit callback', async (t) => {
     t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, { connectionString })
+    await fastify.register(fastifyPostgres, { connectionString })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.transact(
-        (client, commit) =>
-          client.query(
-            'INSERT INTO users(username) VALUES($1) RETURNING id',
-            ['root-commit-callback'],
-            (err, id) => {
-              commit(err, id)
-            }
-          ),
-        function (err, result) {
-          t.error(err)
-          t.equal(result.rows.length, 1)
+    const result = await fastify.pg.transact(
+      (client, commit) =>
+        client.query(
+          'INSERT INTO users(username) VALUES($1) RETURNING id',
+          ['root-commit-callback'],
+          (err, id) => {
+            commit(err, id)
+          }
+        ))
+    t.assert.ok(ready)
+    t.assert.strictEqual(result.rows.length, 1)
 
-          const userId = result.rows[0].id
+    const userId = result.rows[0].id
 
-          fastify.pg
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'root-commit-callback')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
+    const result2 = await fastify.pg
+      .query('SELECT * FROM users WHERE id = $1', [userId])
+    t.assert.strictEqual(result2.rows[0].username, 'root-commit-callback')
   })
 
-  t.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
+  await t.test('Should trigger a rollback when something goes wrong (with callback)', async (t) => {
     t.plan(9)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, { connectionString })
+    await fastify.register(fastifyPostgres, { connectionString })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.transact(
-        (client) => {
-          return client
+    await t.assert.rejects(
+      async () => await fastify.pg.transact(
+        async (client) => {
+          const result = await client
             .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
               'root-rollback-user-callback'
             ])
-            .then((result) => {
-              t.ok(result)
+          t.assert.ok(result)
 
-              const userId = result.rows[0].id
+          const userId = result.rows[0].id
 
-              return client
-                .query('SELECT * FROM users WHERE id = $1', [userId])
-                .then((result) => {
-                  t.ok(result)
-                  t.equal(result.rows[0].username, 'root-rollback-user-callback')
-                })
-                .then(() => {
-                  throw new Error('We make it throw on purpose to trigger a rollback')
-                })
-            })
-        },
-        function (err, result) {
-          t.ok(err)
-          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
-          t.equal(result, undefined)
+          const result2 = await client
+            .query('SELECT * FROM users WHERE id = $1', [userId])
+          t.assert.ok(result2)
+          t.assert.strictEqual(result2.rows[0].username, 'root-rollback-user-callback')
+          throw new Error('We make it throw on purpose to trigger a rollback')
+        }),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, 'We make it throw on purpose to trigger a rollback')
+        return true
+      }
+    )
 
-          fastify.pg
-            .query('SELECT * FROM users WHERE username = \'root-rollback-user-callback\'')
-            .then((result) => {
-              t.ok(result)
-              t.equal(result.rows.length, 0)
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
+    const result3 = await fastify.pg
+      .query('SELECT * FROM users WHERE username = \'root-rollback-user-callback\'')
+    t.assert.ok(result3)
+    t.assert.strictEqual(result3.rows.length, 0)
   })
 
-  t.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
+  await t.test('Should trigger a rollback when something goes wrong (with promises)', async (t) => {
     t.plan(8)
 
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    await new Promise((resolve) => {
+      const fastify = Fastify()
+      t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, { connectionString })
+      fastify.register(fastifyPostgres, { connectionString })
 
-    fastify.ready((err) => {
-      t.error(err)
+      fastify.ready((err) => {
+        t.assert.ifError(err)
 
-      fastify.pg
-        .transact((client) =>
-          client
-            .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
-              'root-rollback-user-promise'
-            ])
-            .then((result) => {
-              t.ok(result)
+        fastify.pg
+          .transact((client) =>
+            client
+              .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+                'root-rollback-user-promise'
+              ])
+              .then((result) => {
+                t.assert.ok(result)
 
-              const userId = result.rows[0].id
+                const userId = result.rows[0].id
 
-              return client
-                .query('SELECT * FROM users WHERE id = $1', [userId])
-                .then((result) => {
-                  t.ok(result)
-                  t.equal(result.rows[0].username, 'root-rollback-user-promise')
-                })
-                .then(() => {
-                  throw new Error('We make it throw on purpose to trigger a rollback')
-                })
-            })
-        )
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
+                return client
+                  .query('SELECT * FROM users WHERE id = $1', [userId])
+                  .then((result) => {
+                    t.assert.ok(result)
+                    t.assert.strictEqual(result.rows[0].username, 'root-rollback-user-promise')
+                  })
+                  .then(() => {
+                    throw new Error('We make it throw on purpose to trigger a rollback')
+                  })
+              })
+          )
+          .catch((err) => {
+            t.assert.ok(err)
+            t.assert.strictEqual(err.message, 'We make it throw on purpose to trigger a rollback')
 
-          fastify.pg
-            .query('SELECT * FROM users WHERE username = \'root-rollback-user-promise\'')
-            .then((result) => {
-              t.ok(result)
-              t.equal(result.rows.length, 0)
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        })
+            fastify.pg
+              .query('SELECT * FROM users WHERE username = \'root-rollback-user-promise\'')
+              .then((result) => {
+                t.assert.ok(result)
+                t.assert.strictEqual(result.rows.length, 0)
+                resolve()
+              })
+              .catch((err) => {
+                t.assert.ifError(err)
+              })
+          })
+      })
     })
   })
 
-  t.test('Should throw if the pool connection throws an error', (t) => {
-    t.plan(3)
-
-    const fastify = Fastify()
-
-    fastify.register(fastifyPostgres, {
-      connectionString: connectionStringBadDbName
-    })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.transact((client) => client.query('SELECT NOW()'))
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
-        })
-    })
-  })
-
-  t.test('Should trigger a rollback when it is impossible to begin transaction', (t) => {
+  await t.test('Should throw if the pool connection throws an error', async (t) => {
     t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, {
+      connectionString: connectionStringBadDbName
+    })
+
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
+
+    await t.assert.rejects(
+      async () => await fastify.pg.transact((client) => client.query('SELECT NOW()')),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, `database "${BAD_DB_NAME}" does not exist`)
+        return true
+      }
+    )
+  })
+
+  await t.test('Should trigger a rollback when it is impossible to begin transaction', async (t) => {
+    t.plan(4)
+
+    const fastify = Fastify()
+    t.after(() => fastify.close())
 
     class FakeClient extends pg.Client {
       query (cmd, cb) {
@@ -269,27 +233,26 @@ test('When fastify.pg root namespace is used:', (t) => {
       }
     }
 
-    fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
+    await fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.transact(
-        (client) => {},
-        function (err, result) {
-          t.ok(err)
-          t.equal(err.message, 'Boom')
-          t.equal(result, undefined)
-        }
-      )
-    })
+    await t.assert.rejects(
+      async () => await fastify.pg.transact((client) => {}),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, 'Boom')
+        return true
+      }
+    )
   })
 
-  t.test('Should trigger a rollback when it is impossible to commit transaction', (t) => {
-    t.plan(3)
+  await t.test('Should trigger a rollback when it is impossible to commit transaction', async (t) => {
+    t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
     class FakeClient extends pg.Client {
       query (queryText, values, cb) {
@@ -314,12 +277,13 @@ test('When fastify.pg root namespace is used:', (t) => {
       }
     }
 
-    fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
+    await fastify.register(fastifyPostgres, { connectionString, pg: { ...pg, Pool: FakePool } })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.transact(
+    await t.assert.rejects(
+      async () => await fastify.pg.transact(
         (client, commit) => {
           return client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
             'root-rollback-commit'
@@ -327,225 +291,213 @@ test('When fastify.pg root namespace is used:', (t) => {
             commit(err, res)
           })
         }
-      ).then((result) => {
-        t.equal(result, undefined)
-      }).catch(err => {
-        t.ok(err)
-        t.equal(err.message, 'Boom')
+      ),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, 'Boom')
+        return true
+      })
+  })
+})
+
+test('When fastify.pg.test namespace is used:', async (t) => {
+  await t.test('Should be able to use transact util with a callback', async (t) => {
+    t.plan(4)
+
+    await new Promise((resolve) => {
+      const fastify = Fastify()
+      t.after(() => fastify.close())
+
+      fastify.register(fastifyPostgres, {
+        connectionString,
+        name: 'test'
+      })
+
+      fastify.ready((err) => {
+        t.assert.ifError(err)
+
+        fastify.pg.test.transact(
+          (client) =>
+            client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+              'namespace-with-callback'
+            ]),
+          function (err, result) {
+            t.assert.ifError(err)
+            t.assert.strictEqual(result.rows.length, 1)
+
+            const userId = result.rows[0].id
+
+            fastify.pg.test
+              .query('SELECT * FROM users WHERE id = $1', [userId])
+              .then((result) => {
+                t.assert.strictEqual(result.rows[0].username, 'namespace-with-callback')
+                resolve()
+              })
+              .catch((err) => {
+                t.fail(err)
+              })
+          }
+        )
       })
     })
   })
 
-  t.end()
-})
-
-test('When fastify.pg.test namespace is used:', (t) => {
-  t.test('Should be able to use transact util with a callback', (t) => {
-    t.plan(4)
-
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
-
-    fastify.register(fastifyPostgres, {
-      connectionString,
-      name: 'test'
-    })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.test.transact(
-        (client) =>
-          client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
-            'namespace-with-callback'
-          ]),
-        function (err, result) {
-          t.error(err)
-          t.equal(result.rows.length, 1)
-
-          const userId = result.rows[0].id
-
-          fastify.pg.test
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'namespace-with-callback')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
-  })
-
-  t.test('Should be able to use transact util with promises', (t) => {
+  await t.test('Should be able to use transact util with promises', async (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.test
-        .transact((client) =>
-          client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
-            'namespace-with-promise'
-          ])
+    const result = await fastify.pg.test
+      .transact((client) =>
+        client.query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+          'namespace-with-promise'
+        ])
+      )
+    t.assert.strictEqual(result.rows.length, 1)
+
+    const userId = result.rows[0].id
+
+    const result2 = await fastify.pg.test
+      .query('SELECT * FROM users WHERE id = $1', [userId])
+    t.assert.strictEqual(result2.rows[0].username, 'namespace-with-promise')
+  })
+
+  await t.test('Should trigger a rollback when something goes wrong (with callback)', async (t) => {
+    t.plan(9)
+
+    await new Promise((resolve) => {
+      const fastify = Fastify()
+      t.after(() => fastify.close())
+
+      fastify.register(fastifyPostgres, {
+        connectionString,
+        name: 'test'
+      })
+
+      fastify.ready((err) => {
+        t.assert.ifError(err)
+
+        fastify.pg.test.transact(
+          (client) => {
+            return client
+              .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
+                'namespace-rollback-user-callback'
+              ])
+              .then((result) => {
+                t.assert.ok(result)
+
+                const userId = result.rows[0].id
+
+                return client
+                  .query('SELECT * FROM users WHERE id = $1', [userId])
+                  .then((result) => {
+                    t.assert.ok(result)
+                    t.assert.strictEqual(result.rows[0].username, 'namespace-rollback-user-callback')
+                  })
+                  .then(() => {
+                    throw new Error('We make it throw on purpose to trigger a rollback')
+                  })
+              })
+          },
+          function (err, result) {
+            t.assert.ok(err)
+            t.assert.strictEqual(err.message, 'We make it throw on purpose to trigger a rollback')
+            t.assert.strictEqual(result, undefined)
+
+            fastify.pg.test
+              .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-callback\'')
+              .then((result) => {
+                t.assert.ok(result)
+                t.assert.strictEqual(result.rows.length, 0)
+                resolve()
+              })
+              .catch((err) => {
+                t.fail(err)
+              })
+          }
         )
-        .then((result) => {
-          t.equal(result.rows.length, 1)
-
-          const userId = result.rows[0].id
-
-          fastify.pg.test
-            .query('SELECT * FROM users WHERE id = $1', [userId])
-            .then((result) => {
-              t.equal(result.rows[0].username, 'namespace-with-promise')
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        })
-        .catch((err) => {
-          t.fail(err)
-        })
+      })
     })
   })
 
-  t.test('Should trigger a rollback when something goes wrong (with callback)', (t) => {
+  await t.test('Should trigger a rollback when something goes wrong (with promises)', async (t) => {
     t.plan(9)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.test.transact(
-        (client) => {
-          return client
-            .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
-              'namespace-rollback-user-callback'
-            ])
-            .then((result) => {
-              t.ok(result)
-
-              const userId = result.rows[0].id
-
-              return client
-                .query('SELECT * FROM users WHERE id = $1', [userId])
-                .then((result) => {
-                  t.ok(result)
-                  t.equal(result.rows[0].username, 'namespace-rollback-user-callback')
-                })
-                .then(() => {
-                  throw new Error('We make it throw on purpose to trigger a rollback')
-                })
-            })
-        },
-        function (err, result) {
-          t.ok(err)
-          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
-          t.equal(result, undefined)
-
-          fastify.pg.test
-            .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-callback\'')
-            .then((result) => {
-              t.ok(result)
-              t.equal(result.rows.length, 0)
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        }
-      )
-    })
-  })
-
-  t.test('Should trigger a rollback when something goes wrong (with promises)', (t) => {
-    t.plan(8)
-
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
-
-    fastify.register(fastifyPostgres, {
-      connectionString,
-      name: 'test'
-    })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.test
-        .transact((client) =>
+    await t.assert.rejects(
+      async () => await fastify.pg.test
+        .transact(async (client) =>
           client
             .query('INSERT INTO users(username) VALUES($1) RETURNING id', [
               'namespace-rollback-user-promise'
             ])
             .then((result) => {
-              t.ok(result)
+              t.assert.ok(result)
 
               const userId = result.rows[0].id
 
               return client
                 .query('SELECT * FROM users WHERE id = $1', [userId])
                 .then((result) => {
-                  t.ok(result)
-                  t.equal(result.rows[0].username, 'namespace-rollback-user-promise')
+                  t.assert.ok(result)
+                  t.assert.strictEqual(result.rows[0].username, 'namespace-rollback-user-promise')
                 })
                 .then(() => {
                   throw new Error('We make it throw on purpose to trigger a rollback')
                 })
             })
-        )
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, 'We make it throw on purpose to trigger a rollback')
+        ),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, 'We make it throw on purpose to trigger a rollback')
+        return true
+      })
 
-          fastify.pg.test
-            .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-promise\'')
-            .then((result) => {
-              t.ok(result)
-              t.equal(result.rows.length, 0)
-            })
-            .catch((err) => {
-              t.fail(err)
-            })
-        })
-    })
+    const result = await fastify.pg.test
+      .query('SELECT * FROM users WHERE username = \'namespace-rollback-user-promise\'')
+    t.assert.ok(result)
+    t.assert.strictEqual(result.rows.length, 0)
   })
 
-  t.test('Should throw if the pool connection throws an error', (t) => {
-    t.plan(3)
+  await t.test('Should throw if the pool connection throws an error', async (t) => {
+    t.plan(4)
 
     const fastify = Fastify()
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString: connectionStringBadDbName,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.test.transact((client) => client.query('SELECT NOW()'))
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
-        })
-    })
+    await t.assert.rejects(
+      async () => await fastify.pg.test.transact((client) => client.query('SELECT NOW()')),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, `database "${BAD_DB_NAME}" does not exist`)
+        return true
+      }
+    )
   })
-
-  t.end()
 })

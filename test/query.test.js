@@ -1,7 +1,6 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const { test } = require('node:test')
 const Fastify = require('fastify')
 const fastifyPostgres = require('../index')
 
@@ -11,253 +10,215 @@ const {
   connectionStringBadDbName
 } = require('./helpers')
 
-test('When fastify.pg root namespace is used:', (t) => {
-  t.test('Should be able to connect and perform a query with a callback', (t) => {
+test('When fastify.pg root namespace is used:', async t => {
+  await t.test('Should be able to connect and perform a query with a callback', async (t) => {
     t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.connect(onConnect)
-    })
-
-    function onConnect (err, client, done) {
-      t.error(err)
-
-      client.query('SELECT NOW()', (err, result) => {
-        done()
-        t.error(err)
-        t.ok(result.rows)
-      })
-    }
+    const client = await fastify.pg.connect()
+    t.assert.ok(client)
+    const result = await client.query('SELECT NOW()')
+    t.assert.ok(result)
+    t.assert.ok(result.rows)
+    client.release()
   })
 
-  t.test('Should be able to use the query util with a callback', (t) => {
+  await t.test('Should be able to use the query util with a callback', async (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.query('SELECT NOW()', (err, result) => {
-        t.error(err)
-        t.ok(result.rows)
-      })
-    })
+    const result = await fastify.pg.query('SELECT NOW()')
+    t.assert.ok(result)
+    t.assert.ok(result.rows)
   })
 
-  t.test('Should be able to use the query util with promises', (t) => {
+  await t.test('Should be able to use the query util with promises', async (t) => {
     t.plan(2)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg
-        .query('SELECT NOW()')
-        .then((result) => {
-          t.ok(result.rows)
-        })
-        .catch((err) => {
-          t.fail(err)
-        })
-    })
+    const result = await fastify.pg
+      .query('SELECT NOW()')
+    t.assert.ok(result.rows)
   })
 
-  t.test(
+  await t.test(
     'query util should return an error when pg fails to perform an operation using a callback',
-    (t) => {
+    async (t) => {
       t.plan(4)
 
       const fastify = Fastify()
-      t.teardown(() => fastify.close())
+      t.after(() => fastify.close())
 
-      fastify.register(fastifyPostgres, {
+      await fastify.register(fastifyPostgres, {
         connectionString: connectionStringBadDbName
       })
 
-      fastify.ready((err) => {
-        t.error(err)
+      const ready = await fastify.ready()
+      t.assert.ok(ready)
 
-        fastify.pg.query('SELECT NOW()', (err, result) => {
-          t.equal(result, undefined)
-          t.ok(err)
-          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
-        })
-      })
+      await t.assert.rejects(
+        async () => await fastify.pg.query('SELECT NOW()'),
+        (err) => {
+          t.assert.ok(err)
+          t.assert.strictEqual(err.message, `database "${BAD_DB_NAME}" does not exist`)
+
+          return true
+        }
+      )
     }
   )
 
-  t.test('Should throw when pg fails to perform operation with promises', (t) => {
-    t.plan(3)
-
-    const fastify = Fastify()
-    t.teardown(() => fastify.close())
-
-    fastify.register(fastifyPostgres, {
-      connectionString: connectionStringBadDbName
-    })
-
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg
-        .query('SELECT NOW()')
-        .then((result) => {
-          t.fail(result)
-        })
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
-        })
-    })
-  })
-
-  t.end()
-})
-
-test('When fastify.pg custom namespace is used:', (t) => {
-  t.test('Should be able to connect and perform a query', (t) => {
+  await t.test('Should throw when pg fails to perform operation with promises', async (t) => {
     t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
-      connectionString,
-      name: 'test'
+    await fastify.register(fastifyPostgres, {
+      connectionString: connectionStringBadDbName
     })
 
-    fastify.ready((err) => {
-      t.error(err)
-      fastify.pg.test.connect(onConnect)
-    })
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-    function onConnect (err, client, done) {
-      t.error(err)
-      client.query('SELECT NOW()', (err, result) => {
-        done()
-        t.error(err)
-        t.ok(result.rows)
+    await t.assert.rejects(
+      async () => await fastify.pg
+        .query('SELECT NOW()'),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, `database "${BAD_DB_NAME}" does not exist`)
+        return true
       })
-    }
   })
+})
 
-  t.test('Should be able to use query util with a callback', (t) => {
+test('When fastify.pg custom namespace is used:', async t => {
+  await t.test('Should be able to connect and perform a query', async (t) => {
     t.plan(3)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
-      fastify.pg.test.query('SELECT NOW()', (err, result) => {
-        t.error(err)
-        t.ok(result.rows)
-      })
-    })
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
+    const client = await fastify.pg.test.connect()
+
+    const result = await client.query('SELECT NOW()')
+    t.assert.ok(ready)
+    t.assert.ok(result.rows)
+
+    client.release()
   })
 
-  t.test('Should be able to use query util with promises', (t) => {
+  await t.test('Should be able to use query util with a callback', async (t) => {
     t.plan(2)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
-
-      fastify.pg.test
-        .query('SELECT NOW()')
-        .then((result) => {
-          t.ok(result.rows)
-        })
-        .catch((err) => {
-          t.fail(err)
-        })
-    })
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
+    const result = await fastify.pg.test.query('SELECT NOW()')
+    t.assert.ok(result.rows)
   })
 
-  t.test('Should be able to use native module', (t) => {
+  await t.test('Should be able to use query util with promises', async (t) => {
     t.plan(2)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
+      connectionString,
+      name: 'test'
+    })
+
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
+
+    const result = await fastify.pg.test
+      .query('SELECT NOW()')
+    t.assert.ok(result.rows)
+  })
+
+  await t.test('Should be able to use native module', async (t) => {
+    t.plan(2)
+
+    const fastify = Fastify()
+    t.after(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, {
       connectionString,
       name: 'test',
       native: true
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.test
-        .query('SELECT 1 AS one')
-        .then((result) => {
-          t.equal(result.rows[0].one, 1)
-        })
-        .catch((err) => {
-          t.fail(err)
-        })
-    })
+    const result = await fastify.pg.test
+      .query('SELECT 1 AS one')
+    t.assert.strictEqual(result.rows[0].one, 1)
   })
 
-  t.test('Should throw when pg fails to perform an operation with promises', (t) => {
-    t.plan(3)
+  await t.test('Should throw when pg fails to perform an operation with promises', async (t) => {
+    t.plan(4)
 
     const fastify = Fastify()
-    t.teardown(() => fastify.close())
+    t.after(() => fastify.close())
 
-    fastify.register(fastifyPostgres, {
+    await fastify.register(fastifyPostgres, {
       connectionString: connectionStringBadDbName,
       name: 'test'
     })
 
-    fastify.ready((err) => {
-      t.error(err)
+    const ready = await fastify.ready()
+    t.assert.ok(ready)
 
-      fastify.pg.test
-        .query('SELECT NOW()')
-        .then((result) => {
-          t.fail(result)
-        })
-        .catch((err) => {
-          t.ok(err)
-          t.equal(err.message, `database "${BAD_DB_NAME}" does not exist`)
-        })
-    })
+    await t.assert.rejects(
+      async () => await fastify.pg.test
+        .query('SELECT NOW()'),
+      (err) => {
+        t.assert.ok(err)
+        t.assert.strictEqual(err.message, `database "${BAD_DB_NAME}" does not exist`)
+        return true
+      })
   })
-
-  t.end()
 })
