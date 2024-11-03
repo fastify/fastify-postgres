@@ -50,12 +50,12 @@ declare namespace fastifyPostgres {
   export function transact<TResult>(
     fn: (client: Pg.PoolClient) => Promise<TResult>
   ): Promise<TResult>;
-  
+
   export function transact<TResult>(
     fn: (client: Pg.PoolClient) => Promise<TResult>,
     cb: (error: Error | null, result?: TResult) => void
   ): void;
-  
+
   export const fastifyPostgres: FastifyPostgres
   export { fastifyPostgres as default }
 }
