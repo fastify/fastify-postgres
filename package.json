@@ -7,8 +7,8 @@
   "types": "index.d.ts",
   "scripts": {
     "check-examples": "tsc --build examples/typescript/*",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "load-data": "docker exec -it fastify-postgres psql -c 'CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);' -U postgres -d postgres",
     "postgres": "docker run -p 5432:5432 --name fastify-postgres -e POSTGRES_PASSWORD=postgres -d postgres:11-alpine",
     "test": "npm run test:unit && npm run test:typescript",
@@ -71,9 +71,9 @@
     "@types/pg": "^8.11.4",
     "c8": "^10.1.2",
     "fastify": "^5.0.0",
+    "neostandard": "^0.12.0",
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
-    "standard": "^17.1.0",
     "tsd": "^0.31.1",
     "typescript": "~5.7.2"
   },
