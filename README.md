@@ -307,7 +307,7 @@ $ npm test
     DATABASE_TEST_URL="postgres://username:password@localhost/something_thats_a_test_database" npm test
     ```
 
-## Acknowledgements
+## Acknowledgments
 
 This project is kindly sponsored by:
 - [nearForm](https://www.nearform.com)
