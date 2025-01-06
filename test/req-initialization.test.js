@@ -18,13 +18,13 @@ test('When we use the fastify-postgres transaction route option', async t => {
 
     await fastify.pg.query('DELETE FROM "users" WHERE TRUE')
 
-    fastify.get('/count-users', async (req, reply) => {
+    fastify.get('/count-users', async () => {
       const result = await fastify.pg.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
 
       return result
     })
 
-    fastify.get('/pass', { pg: { transact: true } }, async (req, reply) => {
+    fastify.get('/pass', { pg: { transact: true } }, async (req) => {
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
       await req.pg.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
       return 'complete'
@@ -51,13 +51,13 @@ test('When we use the fastify-postgres transaction route option', async t => {
 
     await fastify.pg.test.query('DELETE FROM "users" WHERE TRUE')
 
-    fastify.get('/count-users', async (req, reply) => {
+    fastify.get('/count-users', async () => {
       const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'pass-opt-in\'')
 
       return result
     })
 
-    fastify.get('/pass', { pg: { transact: 'test' } }, async (req, reply) => {
+    fastify.get('/pass', { pg: { transact: 'test' } }, async (req) => {
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
       await req.pg.test.query('INSERT INTO users(username) VALUES($1) RETURNING id', ['pass-opt-in'])
 
@@ -84,7 +84,7 @@ test('When we use the fastify-postgres transaction route option', async t => {
 
     await fastify.pg.query('DELETE FROM "users" WHERE TRUE')
 
-    fastify.get('/count-users', async (req, reply) => {
+    fastify.get('/count-users', async (_req, reply) => {
       const result = await fastify.pg.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'fail-opt-in\'')
 
       reply.send(result)
@@ -119,7 +119,7 @@ test('When we use the fastify-postgres transaction route option', async t => {
 
     await fastify.pg.test.query('DELETE FROM "users" WHERE TRUE')
 
-    fastify.get('/count-users', async (req, reply) => {
+    fastify.get('/count-users', async (_req, reply) => {
       const result = await fastify.pg.test.query('SELECT COUNT(*) AS "userCount" FROM users WHERE username=\'fail-opt-in\'')
 
       reply.send(result)
@@ -162,7 +162,7 @@ test('When we use the fastify-postgres transaction route option', async t => {
         }
       },
       pg: { transact: true }
-    }, async (req, reply) => {
+    }, async () => {
       t.assert.fail('should never execute the handler')
     })
 
@@ -186,7 +186,7 @@ test('Should not add hooks with combinations of registration `options.name` and 
     await fastify.register(fastifyPostgres, {
       connectionString
     })
-    fastify.get('/', async (req, reply) => {
+    fastify.get('/', async (req) => {
       t.assert.strictEqual(req.pg, null)
     })
     await fastify.inject({ url: '/' })
@@ -202,7 +202,7 @@ test('Should not add hooks with combinations of registration `options.name` and 
       connectionString,
       name: 'test'
     })
-    fastify.get('/', async (req, reply) => {
+    fastify.get('/', async (req) => {
       t.assert.strictEqual(req.pg, null)
     })
 
@@ -219,7 +219,7 @@ test('Should not add hooks with combinations of registration `options.name` and 
       connectionString,
       name: 'test'
     })
-    fastify.get('/', { pg: { transact: true } }, async (req, reply) => {
+    fastify.get('/', { pg: { transact: true } }, async (req) => {
       t.assert.strictEqual(req.pg, null)
     })
 
@@ -235,7 +235,7 @@ test('Should not add hooks with combinations of registration `options.name` and 
     await fastify.register(fastifyPostgres, {
       connectionString
     })
-    fastify.get('/', { pg: { transact: 'test' } }, async (req, reply) => {
+    fastify.get('/', { pg: { transact: 'test' } }, async (req) => {
       t.assert.strictEqual(req.pg, null)
     })
 
@@ -252,7 +252,7 @@ test('Should not add hooks with combinations of registration `options.name` and 
       connectionString,
       name: 'test'
     })
-    fastify.get('/', { pg: { transact: 'different' } }, async (req, reply) => {
+    fastify.get('/', { pg: { transact: 'different' } }, async (req) => {
       t.assert.strictEqual(req.pg, null)
     })
 
@@ -272,7 +272,7 @@ test('Should throw errors with incorrect combinations of registration `options.n
       name
     })
 
-    fastify.get('/', { pg: { transact: name } }, async (req, reply) => {})
+    fastify.get('/', { pg: { transact: name } }, async () => {})
 
     const response = await fastify.inject({ url: '/' })
     t.assert.deepStrictEqual(response.json(), {
@@ -292,10 +292,10 @@ test('Should throw errors with incorrect combinations of registration `options.n
       connectionString,
       name
     })
-    fastify.addHook('onRequest', async (req, reply) => {
+    fastify.addHook('onRequest', async (req) => {
       req.pg = { [name]: await fastify.pg[name].connect() }
     })
-    fastify.get('/', { pg: { transact: name } }, async (req, reply) => {})
+    fastify.get('/', { pg: { transact: name } }, async () => {})
 
     const response = await fastify.inject({ url: '/' })
     t.assert.deepStrictEqual(response.json(), {
@@ -312,10 +312,10 @@ test('Should throw errors with incorrect combinations of registration `options.n
     await fastify.register(fastifyPostgres, {
       connectionString
     })
-    fastify.addHook('onRequest', async (req, reply) => {
+    fastify.addHook('onRequest', async (req) => {
       req.pg = await fastify.pg.connect()
     })
-    fastify.get('/', { pg: { transact: true } }, async (req, reply) => {})
+    fastify.get('/', { pg: { transact: true } }, async () => {})
 
     const response = await fastify.inject({ url: '/' })
     t.assert.deepStrictEqual(response.json(), {

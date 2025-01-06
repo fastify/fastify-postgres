@@ -96,7 +96,7 @@ function fastifyPostgres (fastify, options, next) {
     transact: transact.bind(pool)
   }
 
-  fastify.addHook('onClose', (fastify, done) => pool.end(done))
+  fastify.addHook('onClose', (_fastify, done) => pool.end(done))
 
   if (name) {
     if (db[name]) {
@@ -135,7 +135,7 @@ function fastifyPostgres (fastify, options, next) {
       return
     }
 
-    const preHandler = async (req, reply) => {
+    const preHandler = async (req) => {
       const client = await pool.connect()
 
       if (name) {
@@ -164,7 +164,7 @@ function fastifyPostgres (fastify, options, next) {
       await client.query('BEGIN')
     }
 
-    const onError = (req, reply, error, done) => {
+    const onError = (req, _reply, _error, done) => {
       req[transactionFailedSymbol] = true
       extractRequestClient(req, transact).query('ROLLBACK', done)
     }

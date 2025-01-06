@@ -239,7 +239,7 @@ test('When fastify.pg root namespace is used:', async (t) => {
     t.assert.ok(ready)
 
     await t.assert.rejects(
-      async () => await fastify.pg.transact((client) => {}),
+      async () => await fastify.pg.transact(() => {}),
       (err) => {
         t.assert.ok(err)
         t.assert.strictEqual(err.message, 'Boom')
