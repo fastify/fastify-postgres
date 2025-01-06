@@ -5,7 +5,7 @@
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
 
 Fastify PostgreSQL connection plugin; with this, you can share the same PostgreSQL connection pool in every part of your server.
-Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used, the options that you pass to `register` will be passed to the PostgreSQL pool builder.
+Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used, and the options that you pass to `register` will be passed to the PostgreSQL pool builder.
 
 ## Install
 ```
@@ -150,7 +150,7 @@ fastify.listen({ port: 3000 }, err => {
 })
 ```
 
-As you can see there is no need to close the client, since it is done internally. Promises and async await are supported as well.
+As you can see there is no need to close the client since it is done internally. Promises and async await are supported as well.
 
 ### Name option
 If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo`.
@@ -182,7 +182,7 @@ fastify.listen({ port: 3000 }, err => {
 ### Native option
 If you want maximum performance you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
 *Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
-Note: trying to use native options without successfully installation of `pg-native` will return a warning and fallback to regular `pg` module.
+Note: trying to use native options without successful installation of `pg-native` will return a warning and fallback to the regular `pg` module.
 
 ```js
 const fastify = require('fastify')()
@@ -208,7 +208,7 @@ fastify.listen({ port: 3000 }, err => {
 ```
 
 ### `pg` option
-If you want to provide your own `pg` module, for example to support packages like [`pg-range`](https://www.npmjs.com/package/pg-range), you can provide an optional `pg` option with the patched library to use:
+If you want to provide your own `pg` module, for example, to support packages like [`pg-range`](https://www.npmjs.com/package/pg-range), you can provide an optional `pg` option with the patched library to use:
 
 ```js
 const fastify = require('fastify')()
