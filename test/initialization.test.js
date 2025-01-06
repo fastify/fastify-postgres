@@ -51,7 +51,7 @@ test('Should not throw if registered within different scopes (with and without n
   const fastify = Fastify()
   t.after(() => fastify.close())
 
-  await fastify.register(function scopeOne (instance, opts, next) {
+  await fastify.register(function scopeOne (instance, _opts, next) {
     instance.register(fastifyPostgres, {
       connectionString
     })
@@ -59,7 +59,7 @@ test('Should not throw if registered within different scopes (with and without n
     next()
   })
 
-  await fastify.register(function scopeTwo (instance, opts, next) {
+  await fastify.register(function scopeTwo (instance, _opts, next) {
     instance.register(fastifyPostgres, {
       connectionString,
       name: 'one'
