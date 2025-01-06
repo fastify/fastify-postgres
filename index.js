@@ -125,7 +125,7 @@ function fastifyPostgres (fastify, options, next) {
   }
 
   fastify.addHook('onRoute', routeOptions => {
-    const transact = routeOptions && routeOptions.pg && routeOptions.pg.transact
+    const transact = routeOptions?.pg?.transact
 
     if (
       !transact ||
