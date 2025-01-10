@@ -11,6 +11,21 @@ Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used,
 ```
 npm i pg @fastify/postgres
 ```
+
+### Compatibility
+| Plugin version | Fastify version |
+| ---------------|-----------------|
+| `^6.x`         | `^5.x`          |
+| `^5.x`         | `^4.x`          |
+| `^3.x`         | `^3.x`          |
+| `^1.x`         | `^2.x`          |
+| `^1.x`         | `^1.x`          |
+
+
+Please note that if a Fastify version is out of support, then so are the corresponding versions of this plugin
+in the table above.
+See [Fastify's LTS policy](https://github.com/fastify/fastify/blob/main/docs/Reference/LTS.md) for more details.
+
 ## Usage
 Add it to your project with `register` and you are done!
 This plugin will add the `pg` namespace to your Fastify instance, with the following properties:
