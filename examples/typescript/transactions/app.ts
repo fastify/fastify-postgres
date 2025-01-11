@@ -1,12 +1,12 @@
-import fastify from 'fastify';
+import fastify from 'fastify'
 
-import { fastifyPostgres } from '../../../index';
+import { fastifyPostgres } from '../../../index'
 
-const app = fastify();
+const app = fastify()
 
 app.register(fastifyPostgres, {
   connectionString: 'postgres://user:password@host:port/db',
-});
+})
 
 app.post('/init-async', async () => {
   const createTableQuery = `
@@ -15,14 +15,14 @@ app.post('/init-async', async () => {
       name varchar(80) NOT NULL,
       created_at timestamp default NULL
     );
-  `;
+  `
 
   return app.pg.transact(async (client) => {
-    const result = await client.query(createTableQuery);
+    const result = await client.query(createTableQuery)
 
-    return result;
-  });
-});
+    return result
+  })
+})
 
 app.post('/init-cb', (_req, reply) => {
   const createTableQuery = `
@@ -31,22 +31,22 @@ app.post('/init-cb', (_req, reply) => {
       name varchar(80) NOT NULL,
       created_at timestamp default NULL
     );
-  `;
+  `
 
   app.pg.transact(
     (client) => {
-      return client.query(createTableQuery);
+      return client.query(createTableQuery)
     },
     (error, result) => {
       if (error) {
-        reply.status(500).send(error);
-        return;
+        reply.status(500).send(error)
+        return
       }
 
-      reply.status(200).send(result);
+      reply.status(200).send(result)
     }
-  );
-});
+  )
+})
 
 app.post('/transact-route', { pg: { transact: true } }, async (req, _reply) => {
   const createTableQuery = `
@@ -55,10 +55,10 @@ app.post('/transact-route', { pg: { transact: true } }, async (req, _reply) => {
       name varchar(80) NOT NULL,
       created_at timestamp default NULL
     );
-  `;
+  `
 
-  return req.pg?.query(createTableQuery);
-});
+  return req.pg?.query(createTableQuery)
+})
 
 app.post(
   '/transact-route-alternate',
@@ -70,10 +70,10 @@ app.post(
       name varchar(80) NOT NULL,
       created_at timestamp default NULL
     );
-  `;
+  `
 
-    return req.pg?.query(createTableQuery);
+    return req.pg?.query(createTableQuery)
   }
-);
+)
 
-export { app };
+export { app }
