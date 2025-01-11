@@ -1,5 +1,5 @@
-import { FastifyPluginCallback } from 'fastify';
-import * as Pg from 'pg';
+import { FastifyPluginCallback } from 'fastify'
+import * as Pg from 'pg'
 
 declare module 'fastify' {
   export interface FastifyInstance {
@@ -15,7 +15,7 @@ declare module 'fastify' {
   }
 }
 
-type FastifyPostgres = FastifyPluginCallback<fastifyPostgres.PostgresPluginOptions>;
+type FastifyPostgres = FastifyPluginCallback<fastifyPostgres.PostgresPluginOptions>
 
 declare namespace fastifyPostgres {
   export type PostgresDb = {
@@ -24,11 +24,11 @@ declare namespace fastifyPostgres {
     query: Pg.Pool['query'];
     connect: Pg.Pool['connect'];
     transact: typeof transact;
-  };
+  }
 
   export type FastifyPostgresRouteOptions = {
     transact: boolean | string;
-  };
+  }
 
   export type PostgresPluginOptions = {
     /**
@@ -45,20 +45,20 @@ declare namespace fastifyPostgres {
      * Instance name of fastify-postgres
      */
     name?: string;
-  } & Pg.PoolConfig;
+  } & Pg.PoolConfig
 
-  export function transact<TResult>(
+  export function transact<TResult> (
     fn: (client: Pg.PoolClient) => Promise<TResult>
-  ): Promise<TResult>;
+  ): Promise<TResult>
 
-  export function transact<TResult>(
+  export function transact<TResult> (
     fn: (client: Pg.PoolClient) => Promise<TResult>,
     cb: (error: Error | null, result?: TResult) => void
-  ): void;
+  ): void
 
   export const fastifyPostgres: FastifyPostgres
   export { fastifyPostgres as default }
 }
 
-declare function fastifyPostgres(...params: Parameters<FastifyPostgres>): ReturnType<FastifyPostgres>
+declare function fastifyPostgres (...params: Parameters<FastifyPostgres>): ReturnType<FastifyPostgres>
 export = fastifyPostgres
