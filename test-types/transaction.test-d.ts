@@ -3,7 +3,7 @@ import { PoolClient, QueryResult } from 'pg'
 import { expectType } from 'tsd'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import fastifyPostgres, { PostgresDb } from '../../index'
+import fastifyPostgres, { PostgresDb } from '../index'
 
 const app = fastify()
 

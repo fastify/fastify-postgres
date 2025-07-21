@@ -81,7 +81,7 @@
     "pg": ">=6.0.0"
   },
   "tsd": {
-    "directory": "test/types"
+    "directory": "test-types"
   },
   "publishConfig": {
     "access": "public"

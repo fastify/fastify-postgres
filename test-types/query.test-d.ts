@@ -2,7 +2,7 @@ import fastify from 'fastify'
 import { Client, Pool, PoolClient, QueryResult } from 'pg'
 import { expectAssignable, expectType } from 'tsd'
 
-import fastifyPostgres, { PostgresDb } from '../../index'
+import fastifyPostgres, { PostgresDb } from '../index'
 
 const app = fastify()
 
