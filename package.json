@@ -75,7 +75,7 @@
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
     "tsd": "^0.32.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.9.2"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
