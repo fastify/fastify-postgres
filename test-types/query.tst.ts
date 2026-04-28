@@ -12,14 +12,14 @@ app.register(fastifyPostgres, {
 app.get('/calc', async () => {
   expect(app.pg).type.toBeAssignableTo<PostgresDb>()
 
-  expect(app.pg.pool).type.toBeAssignableTo<Pool>()
-  expect(app.pg.Client).type.toBeAssignableTo<Client>()
+  expect(app.pg.pool).type.toBe<Pool>()
+  expect(app.pg.Client).type.toBe<Client>()
 
   const client = await app.pg.connect()
-  expect(client).type.toBeAssignableTo<PoolClient>()
+  expect(client).type.toBe<PoolClient>()
 
   const sumResult = await client.query<{ sum: number }>('SELECT 2 + 2 as sum')
-  expect(sumResult).type.toBeAssignableTo<QueryResult<{ sum: number }>>()
+  expect(sumResult).type.toBe<QueryResult<{ sum: number }>>()
 
   client.release()
 

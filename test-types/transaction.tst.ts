@@ -1,9 +1,7 @@
 import fastify from 'fastify'
 import { PoolClient, QueryResult } from 'pg'
 import { expect } from 'tstyche'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import fastifyPostgres, { PostgresDb } from '../index'
+import fastifyPostgres from '..'
 
 const app = fastify()
 
@@ -19,12 +17,12 @@ app.post('/insert-async', async () => {
   `
 
   const transactionResult = await app.pg.transact((client) => {
-    expect(client).type.toBeAssignableTo<PoolClient>()
+    expect(client).type.toBe<PoolClient>()
 
     return client.query<{ sum: number }>(insertQuery)
   })
 
-  expect(transactionResult).type.toBeAssignableTo<QueryResult<{ sum: number }>>()
+  expect(transactionResult).type.toBe<QueryResult<{ sum: number }>>()
 
   return transactionResult
 })
@@ -38,13 +36,13 @@ app.post('/insert-cb', (_req, reply) => {
 
   app.pg.transact(
     (client) => {
-      expect(client).type.toBeAssignableTo<PoolClient>()
+      expect(client).type.toBe<PoolClient>()
 
       return client.query<{ sum: number }>(insertQuery)
     },
     (error, result) => {
-      expect(error).type.toBeAssignableTo<Error | null>()
-      expect(result).type.toBeAssignableTo<QueryResult<{ sum: number }> | undefined>()
+      expect(error).type.toBe<Error | null>()
+      expect(result).type.toBe<QueryResult<{ sum: number }> | undefined>()
 
       if (error) {
         reply.status(500).send(error)
