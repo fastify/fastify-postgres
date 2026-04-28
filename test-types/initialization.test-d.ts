@@ -1,7 +1,6 @@
 import fastify from 'fastify'
 import * as pg from 'pg'
-import { expectAssignable, expectType } from 'tsd'
-
+import { expect } from 'tstyche'
 import fastifyPostgres, { PostgresDb } from '../index'
 
 const app = fastify()
@@ -34,6 +33,7 @@ app.register(fastifyPostgres, {
 
 // Plugin property available
 app.after(() => {
-  expectAssignable<PostgresDb>(app.pg)
-  expectType<PostgresDb>(app.pg.users)
+  expect(app.pg).type.toBeAssignableTo<PostgresDb>()
+  expect(app.pg.users).type.toBeAssignableTo<PostgresDb>()
+  expect(app.pg.posts).type.toBeAssignableTo<PostgresDb>()
 })

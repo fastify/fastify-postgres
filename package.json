@@ -14,7 +14,7 @@
     "test": "npm run test:unit && npm run test:typescript",
     "test:unit": "c8 --100 node --test",
     "test:report": "standard && c8 --reporter html node --test",
-    "test:typescript": "tsd"
+    "test:typescript": "tstyche"
   },
   "repository": {
     "type": "git",
@@ -74,14 +74,11 @@
     "neostandard": "^0.13.0",
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
-    "tsd": "^0.33.0",
+    "tstyche": "^7.0.0",
     "typescript": "~6.0.2"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
-  },
-  "tsd": {
-    "directory": "test-types"
   },
   "publishConfig": {
     "access": "public"
