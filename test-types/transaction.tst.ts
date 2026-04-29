@@ -1,9 +1,7 @@
 import fastify from 'fastify'
 import { PoolClient, QueryResult } from 'pg'
-import { expectType } from 'tsd'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import fastifyPostgres, { PostgresDb } from '../index'
+import { expect } from 'tstyche'
+import fastifyPostgres from '..'
 
 const app = fastify()
 
@@ -19,12 +17,12 @@ app.post('/insert-async', async () => {
   `
 
   const transactionResult = await app.pg.transact((client) => {
-    expectType<PoolClient>(client)
+    expect(client).type.toBe<PoolClient>()
 
     return client.query<{ sum: number }>(insertQuery)
   })
 
-  expectType<QueryResult<{ sum: number }>>(transactionResult)
+  expect(transactionResult).type.toBe<QueryResult<{ sum: number }>>()
 
   return transactionResult
 })
@@ -38,13 +36,13 @@ app.post('/insert-cb', (_req, reply) => {
 
   app.pg.transact(
     (client) => {
-      expectType<PoolClient>(client)
+      expect(client).type.toBe<PoolClient>()
 
       return client.query<{ sum: number }>(insertQuery)
     },
     (error, result) => {
-      expectType<Error | null>(error)
-      expectType<QueryResult<{ sum: number }> | undefined>(result)
+      expect(error).type.toBe<Error | null>()
+      expect(result).type.toBe<QueryResult<{ sum: number }> | undefined>()
 
       if (error) {
         reply.status(500).send(error)
