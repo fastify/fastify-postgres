@@ -64,7 +64,7 @@
     }
   ],
   "dependencies": {
-    "fastify-plugin": "^5.0.0"
+    "fastify-plugin": "^6.0.0"
   },
   "devDependencies": {
     "@tsconfig/node10": "^1.0.9",
