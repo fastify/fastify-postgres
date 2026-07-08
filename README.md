@@ -8,11 +8,13 @@ Fastify PostgreSQL connection plugin; with this, you can share the same PostgreS
 Under the hood [node-postgres](https://github.com/brianc/node-postgres) is used, and the options that you pass to `register` will be passed to the PostgreSQL pool builder.
 
 ## Install
+
 ```
 npm i pg @fastify/postgres
 ```
 
 ### Compatibility
+
 | Plugin version | Fastify version |
 | ---------------|-----------------|
 | `>=6.x`        | `^5.x`          |
@@ -21,14 +23,15 @@ npm i pg @fastify/postgres
 | `>=1.x <3.x`   | `^2.x`          |
 | `>=1.x <3.x`   | `^1.x`          |
 
-
 Please note that if a Fastify version is out of support, then so are the corresponding versions of this plugin
 in the table above.
 See [Fastify's LTS policy](https://github.com/fastify/fastify/blob/main/docs/Reference/LTS.md) for more details.
 
 ## Usage
+
 Add it to your project with `register` and you are done!
 This plugin will add the `pg` namespace to your Fastify instance, with the following properties:
+
 ```
 connect: the function to get a connection from the pool
 pool: the pool instance
@@ -38,6 +41,7 @@ transact: a utility to perform multiple queries _with_ a transaction
 ```
 
 Example:
+
 ```js
 const fastify = require('fastify')()
 
@@ -68,6 +72,7 @@ fastify.listen({ port: 3000 }, err => {
 ```
 
 Async await is supported as well!
+
 ```js
 const fastify = require('fastify')()
 
@@ -94,7 +99,9 @@ fastify.listen({ port: 3000 }, err => {
   console.log(`server listening on ${fastify.server.address().port}`)
 })
 ```
+
 Use of `pg.query`
+
 ```js
 const fastify = require('fastify')()
 
@@ -118,6 +125,7 @@ fastify.listen({ port: 3000 }, err => {
 ```
 
 Use of `pg.transact`
+
 ```js
 const fastify = require('fastify')()
 
@@ -168,6 +176,7 @@ fastify.listen({ port: 3000 }, err => {
 As you can see there is no need to close the client since it is done internally. Promises and async await are supported as well.
 
 ### Name option
+
 If you need to have multiple databases set up, then you can name each one of them by passing `name: 'foo'`. It will then be accessible as `fastify.pg.foo`.
 You can use both unnamed and named postgres connections at once. There can be only one unnamed connection, and it will be accessible as `fastify.pg`.
 
@@ -195,6 +204,7 @@ fastify.listen({ port: 3000 }, err => {
 ```
 
 ### Native option
+
 If you want maximum performance you can install [pg-native](https://github.com/brianc/node-pg-native), and pass `native: true` to the plugin options.
 *Note: it requires PostgreSQL client libraries & tools installed, see [instructions](https://github.com/brianc/node-pg-native#install).*
 Note: trying to use native options without successful installation of `pg-native` will return a warning and fallback to the regular `pg` module.
@@ -223,6 +233,7 @@ fastify.listen({ port: 3000 }, err => {
 ```
 
 ### `pg` option
+
 If you want to provide your own `pg` module, for example, to support packages like [`pg-range`](https://www.npmjs.com/package/pg-range), you can provide an optional `pg` option with the patched library to use:
 
 ```js
@@ -250,7 +261,43 @@ fastify.listen({ port: 3000 }, err => {
 })
 ```
 
+### SSL/TLS Usage
+
+This plugin does not implement SSL itself: any option you pass to `register` (including `ssl`) is forwarded as-is to `pg`'s `Pool`/`Client` constructor, so any SSL configuration supported by [node-postgres](https://node-postgres.com/features/ssl) works here too.
+
+There are two ways to enable SSL:
+
+**1. Via the `ssl` option object**
+
+Useful when you need to disable certificate validation (e.g. connecting to a database with a self-signed certificate, such as on Heroku) or provide certs/keys directly.
+
+```js
+const fastify = require('fastify')()
+
+fastify.register(require('@fastify/postgres'), {
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+})
+```
+
+**2. Via SSL parameters in the connection string**
+
+You can also enable SSL by adding parameters such as `sslmode`, `sslrootcert`, `sslcert` and `sslkey` directly to the connection string:
+
+```js
+const fastify = require('fastify')()
+
+fastify.register(require('@fastify/postgres'), {
+  connectionString: 'postgres://username:password@host:port/databasename?sslmode=verify-full&sslrootcert=yourrootcert&sslcert=yourclientcertificate&sslkey=yourclientkey'
+})
+```
+
+> **Warning:** do not mix the two approaches. If the connection string contains any of `sslmode`, `sslcert`, `sslkey` or `sslrootcert`, those values take precedence over anything set in the `ssl` option object, and the `ssl` option will effectively be ignored. Pick one approach (either the `ssl` object, or SSL parameters in the connection string) and stick to it.
+
 ### Transact route option
+
 It is possible to automatically wrap a route handler in a transaction by using the `transact` option when registering a route with Fastify. Note that the option must be scoped within a `pg` options object to take effect.
 
 `query` commands can then be accessed at `request.pg` or `request.pg[name]` and `transact` can be set for either the root pg client with value `true` or for a pg client at a particular namespace with value `name`. Note that the namespace needs to be set when registering the plugin in order to be available on the request object.
@@ -293,13 +340,13 @@ More examples in the [examples/typescript](./examples/typescript) directory.
 
 First, start postgres with:
 
-```
-$ npm run postgres
+```sh
+npm run postgres
 ```
 
 Then you can, in another terminal, find the running docker, init the DB, then run the tests:
 
-```
+```sh
 $ docker ps
 CONTAINER ID        IMAGE                 COMMAND                  CREATED             STATUS              PORTS                    NAMES
 28341f85c4cd        postgres:9.6-alpine   "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        0.0.0.0:5432->5432/tcp   jovial_shockley
@@ -314,10 +361,13 @@ $ npm test
 
 1. Set up a database of your choice in a postgres server of your choice
 2. Create the required table using
+
     ```sql
     CREATE TABLE users(id serial PRIMARY KEY, username VARCHAR (50) NOT NULL);
     ```
+
 3. Specify a connection string to it in a `DATABASE_TEST_URL` environment variable when you run the tests
+
     ```bash
     DATABASE_TEST_URL="postgres://username:password@localhost/something_thats_a_test_database" npm test
     ```
