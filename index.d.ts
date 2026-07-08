@@ -20,7 +20,7 @@ type FastifyPostgres = FastifyPluginCallback<fastifyPostgres.PostgresPluginOptio
 declare namespace fastifyPostgres {
   export type PostgresDb = {
     pool: Pg.Pool;
-    Client: Pg.Client;
+    Client: typeof Pg.Client;
     query: Pg.Pool['query'];
     connect: Pg.Pool['connect'];
     transact: typeof transact;

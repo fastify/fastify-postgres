@@ -13,7 +13,7 @@ app.get('/calc', async () => {
   expect(app.pg).type.toBeAssignableTo<PostgresDb>()
 
   expect(app.pg.pool).type.toBe<Pool>()
-  expect(app.pg.Client).type.toBe<Client>()
+  expect(app.pg.Client).type.toBe<typeof Client>()
 
   const client = await app.pg.connect()
   expect(client).type.toBe<PoolClient>()
