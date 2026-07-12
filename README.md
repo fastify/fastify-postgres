@@ -294,7 +294,8 @@ fastify.register(require('@fastify/postgres'), {
 })
 ```
 
-> **Warning:** do not mix the two approaches. If the connection string contains any of `sslmode`, `sslcert`, `sslkey` or `sslrootcert`, those values take precedence over anything set in the `ssl` option object, and the `ssl` option will effectively be ignored. Pick one approach (either the `ssl` object, or SSL parameters in the connection string) and stick to it.
+> ⚠ Warning:
+> Do not mix the two approaches. If the connection string contains any of `sslmode`, `sslcert`, `sslkey` or `sslrootcert`, those values take precedence over anything set in the `ssl` option object, and the `ssl` option will effectively be ignored. Pick one approach (either the `ssl` object, or SSL parameters in the connection string) and stick to it.
 
 ### Transact route option
 
