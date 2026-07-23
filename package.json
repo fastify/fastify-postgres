@@ -75,7 +75,7 @@
     "pg": "^8.11.3",
     "pg-native": "^3.0.1",
     "tstyche": "^7.0.0",
-    "typescript": "~6.0.2"
+    "typescript": "~7.0.2"
   },
   "peerDependencies": {
     "pg": ">=6.0.0"
