@@ -4,7 +4,7 @@
   "description": "Fastify PostgreSQL connection plugin",
   "main": "index.js",
   "type": "commonjs",
-  "types": "index.d.ts",
+  "types": "types/index.d.ts",
   "scripts": {
     "check-examples": "tsc --build examples/typescript/*",
     "lint": "eslint",
