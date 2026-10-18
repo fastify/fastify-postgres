@@ -237,3 +237,38 @@ test('const result = await fastify.pg and a fastify.pg custom namespace should e
   t.assert.deepStrictEqual(result.rowCount, 1)
   t.assert.deepStrictEqual(resultOne.rowCount, 1)
 })
+
+test('Should log instead of crashing when an idle client errors', { timeout: 10000 }, async (t) => {
+  t.plan(3)
+
+  let onPoolErrorLog
+  const poolErrorLogged = new Promise((resolve) => { onPoolErrorLog = resolve })
+  const stream = {
+    write (line) {
+      const log = JSON.parse(line)
+      if (log.msg === 'idle client error in pg pool') onPoolErrorLog(log)
+    }
+  }
+
+  const fastify = Fastify({ logger: { stream } })
+  t.after(() => fastify.close())
+
+  await fastify.register(fastifyPostgres, {
+    connectionString
+  })
+  await fastify.ready()
+
+  const { rows } = await fastify.pg.query('SELECT pg_backend_pid() AS pid')
+
+  const admin = new fastify.pg.Client({ connectionString })
+  await admin.connect()
+  await admin.query('SELECT pg_terminate_backend($1)', [rows[0].pid])
+  await admin.end()
+
+  const log = await poolErrorLogged
+  t.assert.strictEqual(log.level, 50)
+  t.assert.strictEqual(log.err.code, '57P01')
+
+  const result = await fastify.pg.query('SELECT 1 AS one')
+  t.assert.strictEqual(result.rows[0].one, 1)
+})
