@@ -238,36 +238,40 @@ test('const result = await fastify.pg and a fastify.pg custom namespace should e
   t.assert.deepStrictEqual(resultOne.rowCount, 1)
 })
 
-test('Should log instead of crashing when an idle client errors', { timeout: 10000 }, async (t) => {
+test('Should log instead of crashing when a checked-out client errors', { timeout: 10000 }, async (t) => {
   t.plan(3)
 
-  let onPoolErrorLog
-  const poolErrorLogged = new Promise((resolve) => { onPoolErrorLog = resolve })
+  const errorLogs = []
   const stream = {
     write (line) {
       const log = JSON.parse(line)
-      if (log.msg === 'idle client error in pg pool') onPoolErrorLog(log)
+      if (log.level === 50) errorLogs.push(log)
     }
   }
 
   const fastify = Fastify({ logger: { stream } })
-  t.after(() => fastify.close())
 
   await fastify.register(fastifyPostgres, {
     connectionString
   })
   await fastify.ready()
 
-  const { rows } = await fastify.pg.query('SELECT pg_backend_pid() AS pid')
+  const client = await fastify.pg.connect()
+  t.after(() => {
+    client.release()
+    return fastify.close()
+  })
+  const { rows } = await client.query('SELECT pg_backend_pid() AS pid')
+  const ended = new Promise((resolve) => client.once('end', resolve))
 
   const admin = new fastify.pg.Client({ connectionString })
   await admin.connect()
   await admin.query('SELECT pg_terminate_backend($1)', [rows[0].pid])
   await admin.end()
+  await ended
 
-  const log = await poolErrorLogged
-  t.assert.strictEqual(log.level, 50)
-  t.assert.strictEqual(log.err.code, '57P01')
+  t.assert.strictEqual(errorLogs[0]?.err.code, '57P01')
+  await t.assert.rejects(client.query('SELECT 1'), /not queryable/)
 
   const result = await fastify.pg.query('SELECT 1 AS one')
   t.assert.strictEqual(result.rows[0].one, 1)

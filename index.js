@@ -88,9 +88,13 @@ function fastifyPostgres (fastify, options, next) {
   delete options.name
 
   const pool = new pg.Pool(options)
-  // stop idle client errors (e.g. a server restart) from crashing the process
-  pool.on('error', (err) => {
-    fastify.log.error({ err }, 'idle client error in pg pool')
+  // pg-pool re-emits idle client errors here; unhandled, it crashes the process
+  pool.on('error', () => {})
+  // fires for idle and checked-out clients, so log only here
+  pool.on('connect', (client) => {
+    client.on('error', (err) => {
+      fastify.log.error({ err, name }, 'pg client error')
+    })
   })
 
   const db = {
