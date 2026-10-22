@@ -238,8 +238,46 @@ test('const result = await fastify.pg and a fastify.pg custom namespace should e
   t.assert.deepStrictEqual(resultOne.rowCount, 1)
 })
 
+test('Should log instead of crashing when an idle client errors', { timeout: 10000 }, async (t) => {
+  t.plan(4)
+
+  const errorLogs = []
+  const stream = {
+    write (line) {
+      const log = JSON.parse(line)
+      if (log.level === 50) errorLogs.push(log)
+    }
+  }
+
+  const fastify = Fastify({ logger: { stream } })
+  t.after(() => fastify.close())
+
+  await fastify.register(fastifyPostgres, {
+    connectionString
+  })
+  await fastify.ready()
+
+  const client = await fastify.pg.connect()
+  const { rows } = await client.query('SELECT pg_backend_pid() AS pid')
+  const ended = new Promise((resolve) => client.once('end', resolve))
+  client.release()
+  t.assert.strictEqual(fastify.pg.pool.idleCount, 1)
+
+  const admin = new fastify.pg.Client({ connectionString })
+  await admin.connect()
+  await admin.query('SELECT pg_terminate_backend($1)', [rows[0].pid])
+  await admin.end()
+  await ended
+
+  t.assert.strictEqual(errorLogs.length, 1)
+  t.assert.strictEqual(errorLogs[0].err.code, '57P01')
+
+  const result = await fastify.pg.query('SELECT 1 AS one')
+  t.assert.strictEqual(result.rows[0].one, 1)
+})
+
 test('Should log instead of crashing when a checked-out client errors', { timeout: 10000 }, async (t) => {
-  t.plan(3)
+  t.plan(4)
 
   const errorLogs = []
   const stream = {
@@ -270,7 +308,8 @@ test('Should log instead of crashing when a checked-out client errors', { timeou
   await admin.end()
   await ended
 
-  t.assert.strictEqual(errorLogs[0]?.err.code, '57P01')
+  t.assert.strictEqual(errorLogs.length, 1)
+  t.assert.strictEqual(errorLogs[0].err.code, '57P01')
   await t.assert.rejects(client.query('SELECT 1'), /not queryable/)
 
   const result = await fastify.pg.query('SELECT 1 AS one')
