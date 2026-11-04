@@ -174,6 +174,40 @@ test('When we use the fastify-postgres transaction route option', async t => {
     t.assert.notStrictEqual(response.body, 'never success')
     t.assert.strictEqual(response.json().code, 'FST_ERR_VALIDATION')
   })
+
+  await t.test('Should work properly with `schema` option and validation failure on a namespaced request pg decorator', async t => {
+    const fastify = Fastify()
+    t.after(() => fastify.close())
+
+    await fastify.register(fastifyPostgres, {
+      connectionString,
+      name: 'test'
+    })
+
+    fastify.post('/schema-validation', {
+      schema: {
+        body: {
+          type: 'object',
+          properties: {
+            hello: { type: 'string' }
+          },
+          required: ['hello']
+        }
+      },
+      pg: { transact: 'test' }
+    }, async () => {
+      t.assert.fail('should never execute the handler')
+    })
+
+    const response = await fastify.inject({
+      url: '/schema-validation',
+      method: 'POST',
+      body: { notValid: 'json input' }
+    })
+    t.assert.strictEqual(response.statusCode, 400)
+    t.assert.strictEqual(response.json().code, 'FST_ERR_VALIDATION')
+    t.assert.strictEqual(response.json().message, "body must have required property 'hello'")
+  })
 })
 
 test('Should not add hooks with combinations of registration `options.name` and route options `pg.transact`', async t => {
