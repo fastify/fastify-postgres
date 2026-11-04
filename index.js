@@ -61,6 +61,10 @@ function extractRequestClient (req, transact) {
     return req.pg
   }
 
+  if (!req.pg) {
+    return null
+  }
+
   const requestClient = req.pg[transact]
   if (!requestClient) {
     throw new Error(`request client '${transact}' does not exist`)
@@ -166,7 +170,11 @@ function fastifyPostgres (fastify, options, next) {
 
     const onError = (req, _reply, _error, done) => {
       req[transactionFailedSymbol] = true
-      extractRequestClient(req, transact).query('ROLLBACK', done)
+      const requestClient = extractRequestClient(req, transact)
+      if (!requestClient) {
+        return done()
+      }
+      requestClient.query('ROLLBACK', done)
     }
 
     const onSend = async (req) => {
